@@ -16,11 +16,13 @@ public class LoginController : ControllerBase
 {
     private readonly IConfiguration configuration;
     private readonly AuthService _authService;
+    private readonly VerificationService _verificationService;
 
-    public LoginController(IConfiguration configuration, AuthService authService)
+    public LoginController(IConfiguration configuration, AuthService authService, VerificationService verificationService)
     {
         this.configuration = configuration;
         _authService = authService;
+        _verificationService = verificationService;
     }
 
     [HttpPost]
@@ -37,7 +39,7 @@ public class LoginController : ControllerBase
         }
 
         // Verify the credential
-        if (resp.UserName == credential.UserName && credential.Password == resp.Password)
+        if (resp.Verified == true && resp.UserName == credential.UserName && credential.Password == resp.Password)
         {
             // Creating the security context
             var claims = new List<Claim> {
@@ -47,7 +49,7 @@ public class LoginController : ControllerBase
 
             return Ok(new
             {
-                access_token = CreateToken(claims),
+                access_token = _verificationService.CreateToken(claims),
             });
 
         }
@@ -55,22 +57,6 @@ public class LoginController : ControllerBase
         ModelState.AddModelError("Unauthorized", "You are not authorized to access the endpoint.");
         return Unauthorized(ModelState);
     }
-
-    private string CreateToken(IEnumerable<Claim> claims)
-    {
-        var secretKey = Encoding.ASCII.GetBytes(configuration.GetValue<string>("SecretKey") ?? "");
-
-        // generate the JWT
-        var jwt = new JwtSecurityToken(
-                claims: claims,
-                signingCredentials: new SigningCredentials(
-                    new SymmetricSecurityKey(secretKey),
-                    SecurityAlgorithms.HmacSha256Signature)
-            );
-
-        return new JwtSecurityTokenHandler().WriteToken(jwt);
-    }
-
 
     public class Credential
     {

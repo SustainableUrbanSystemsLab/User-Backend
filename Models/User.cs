@@ -16,6 +16,8 @@ public class User
 
     public string Name { get; set; } = null!;
 
+    public bool Verified { get; set; } = false;
+
     public User()
     {
         Id = ObjectId.GenerateNewId().ToString();

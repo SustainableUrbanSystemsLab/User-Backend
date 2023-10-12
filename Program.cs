@@ -7,7 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<UrbanoStoreDatabaseSettings>(
     builder.Configuration.GetSection("UrbanoDatabase"));
 
+builder.Services.Configure<UrbanoStoreEmailSettings>(
+    builder.Configuration.GetSection("Mailing"));
+
 builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton<VerificationService>();
 
 
 builder.Services.AddControllers();

@@ -12,9 +12,13 @@ namespace Urbano_API.Controllers;
 public class RegisterController : ControllerBase
 {
     private readonly AuthService _authService;
+    private readonly VerificationService _verificationService;
 
-    public RegisterController(AuthService authService) =>
+    public RegisterController(AuthService authService, VerificationService verificationService)
+    {
         _authService = authService;
+        _verificationService = verificationService;
+    }
 
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] User user)
@@ -24,6 +28,7 @@ public class RegisterController : ControllerBase
             return BadRequest("Incorrect mail Id");
         }
         var resp = await _authService.GetUserAsync(user.UserName);
+        _verificationService.sendVerificationMail("testing.bac", "adslkfk");
 
         if(resp is null)
         {
