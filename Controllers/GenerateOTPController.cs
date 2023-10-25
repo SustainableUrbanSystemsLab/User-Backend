@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Net.Mail;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mail;
 using Urbano_API.Models;
 using Urbano_API.Services;
 
@@ -9,34 +8,33 @@ namespace Urbano_API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class RegisterController : ControllerBase
+public class GenerateOTPController : ControllerBase
 {
     private readonly AuthService _authService;
     private readonly VerificationService _verificationService;
 
-    public RegisterController(AuthService authService, VerificationService verificationService)
+    public GenerateOTPController(AuthService authService, VerificationService verificationService)
     {
         _authService = authService;
         _verificationService = verificationService;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Register([FromBody] User user)
+    public async Task<IActionResult> validateEmail([FromBody] Email emailObj)
     {
-        if(!isValidUserName(user.UserName))
+        if (!isValidUserName(emailObj.UserName))
         {
             return BadRequest("Incorrect mail Id");
         }
-        var resp = await _authService.GetUserAsync(user.UserName);
-        //_verificationService.sendVerificationMail(user.UserName, user.Name);
-
-        if(resp is null)
+        var resp = await _authService.GetUserAsync(emailObj.UserName);
+        if (resp is null)
         {
-            await _authService.CreateAsync(user);
-
-            return Ok("User Succesfully created");
+            return BadRequest("Incorrect mail Id");
         }
-        return BadRequest("User already exists");
+
+        _verificationService.sendOTP(resp.UserName, resp.FirstName);
+
+        return Ok("Password change request sent to mail");
     }
 
     private bool isValidUserName(string userName)
@@ -53,6 +51,11 @@ public class RegisterController : ControllerBase
         }
 
         return valid;
+    }
+
+    public class Email
+    {
+        public string UserName { get; set; } = string.Empty;
     }
 }
 

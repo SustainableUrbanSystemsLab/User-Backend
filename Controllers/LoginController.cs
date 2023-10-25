@@ -44,6 +44,7 @@ public class LoginController : ControllerBase
             // Creating the security context
             var claims = new List<Claim> {
                     new Claim(ClaimTypes.Email, credential.UserName),
+                    new Claim(ClaimTypes.Role, resp.Role),
                 };
 
 

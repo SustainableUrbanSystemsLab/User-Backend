@@ -7,7 +7,9 @@ namespace Urbano_API.Models
 
 		public string DatabaseName { get; set; } = null!;
 
-		public string CollectionName { get; set; } = null!;
+		public string UsersCollectionName { get; set; } = null!;
+
+		public string VerificationsCollectionName { get; set; } = null!;
 	}
 }
 

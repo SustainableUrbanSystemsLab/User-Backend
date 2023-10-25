@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using System;
@@ -14,20 +15,30 @@ using static Urbano_API.Controllers.LoginController;
 
 namespace Urbano_API.Services
 {
-	public class VerificationService
-	{
+    public class VerificationService
+    {
         private readonly IConfiguration configuration;
+        private readonly IMongoCollection<Verification> _verificationCollection;
         private readonly string _apiKey;
         private readonly string _fromEmail;
         private readonly string _fromName;
 
 
-        public VerificationService(IConfiguration configuration, IOptions<UrbanoStoreEmailSettings> urbanoStoreEmailSettings)
+        public VerificationService(IConfiguration configuration, IOptions<UrbanoStoreEmailSettings> urbanoStoreEmailSettings, IOptions<UrbanoStoreDatabaseSettings> urbanoStoreDatabaseSettings)
         {
             this.configuration = configuration;
             _apiKey = urbanoStoreEmailSettings.Value.APIKey;
             _fromEmail = urbanoStoreEmailSettings.Value.SenderAddress;
             _fromName = urbanoStoreEmailSettings.Value.SenderName;
+
+            var mongoClient = new MongoClient(
+                urbanoStoreDatabaseSettings.Value.ConnectionString);
+
+            var mongoDatabase = mongoClient.GetDatabase(
+                urbanoStoreDatabaseSettings.Value.DatabaseName);
+
+            _verificationCollection = mongoDatabase.GetCollection<Verification>(
+                urbanoStoreDatabaseSettings.Value.VerificationsCollectionName);
         }
 
         public void sendVerificationMail(string email, string name)
@@ -43,7 +54,22 @@ namespace Urbano_API.Services
             string url = $"https://localhost:7054/Verification/{CreateToken(claims)}";
             var htmlContent = $"<a href = {url}>Confirm my account</a>";
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-            //var response = client.SendEmailAsync(msg);
+            var response = client.SendEmailAsync(msg);
+        }
+
+        public async void sendOTP(string email, string name)
+        {
+            var client = new SendGridClient(_apiKey);
+            var from = new EmailAddress(_fromEmail, _fromName);
+            var subject = "Verify your email address";
+            var to = new EmailAddress(email, name);
+            var plainTextContent = "Password change request was recently raised on this email address:\n\n";
+
+            var otp = (OTPGeneratorService.NextInt() % 10000).ToString("0000");
+            await this.UpsertAsync(otp, email);
+            var htmlContent = $"<div>OTP to validate your account: {otp} </div>";
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+            var response = client.SendEmailAsync(msg);
         }
 
         public bool Verify(string token)
@@ -66,7 +92,7 @@ namespace Urbano_API.Services
                 SecurityToken validatedToken;
                 IPrincipal principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
                 return true;
-            } catch(Exception e)
+            } catch (Exception e)
             {
                 Console.WriteLine(e);
                 return false;
@@ -88,6 +114,23 @@ namespace Urbano_API.Services
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
+        public async Task UpsertAsync(string otp, string userName) {
+            var resp = await _verificationCollection.Find(x => x.UserName == userName).FirstOrDefaultAsync();
+            if(resp == null)
+            {
+                Verification verification = new Verification();
+                verification.UserName = userName;
+                verification.OTP = otp;
+               await _verificationCollection.InsertOneAsync(verification);
+            } else
+            {
+                resp.OTP = otp;
+                await _verificationCollection.ReplaceOneAsync(x => x.UserName == userName, resp);
+            }
+        }
+
+        public async Task<Verification?> GetUserAsync(string userName) => 
+            await _verificationCollection.Find(x => x.UserName == userName).FirstOrDefaultAsync();
     }
 }
 

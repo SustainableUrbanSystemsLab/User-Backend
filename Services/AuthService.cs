@@ -20,7 +20,7 @@ namespace Urbano_API.Services
                 urbanoStoreDatabaseSettings.Value.DatabaseName);
 
             _usersCollection = mongoDatabase.GetCollection<User>(
-                urbanoStoreDatabaseSettings.Value.CollectionName);
+                urbanoStoreDatabaseSettings.Value.UsersCollectionName);
         }
 
         public async Task<List<User>> GetAsync() =>
