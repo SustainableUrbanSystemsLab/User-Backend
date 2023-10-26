@@ -11,7 +11,6 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using Urbano_API.Models;
-using static Urbano_API.Controllers.LoginController;
 
 namespace Urbano_API.Services
 {
@@ -51,7 +50,7 @@ namespace Urbano_API.Services
             var claims = new List<Claim> {
                     new Claim(ClaimTypes.Email, email),
                 };
-            string url = $"https://localhost:7054/Verification/{CreateToken(claims)}";
+            string url = $"{configuration.GetValue<string>("SecretKey")}/{CreateToken(claims)}";
             var htmlContent = $"<a href = {url}>Confirm my account</a>";
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = client.SendEmailAsync(msg);
