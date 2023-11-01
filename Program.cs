@@ -10,7 +10,7 @@ builder.Services.AddCors(options =>
                       {
                           policy.WithOrigins("http://localhost:5173",
                                               "https://localhost:5173",
-                                              "https://urbano-backend.onrender.com")
+                                              "https://urbano-frontend.onrender.com")
                                                    .AllowAnyHeader()
                                                   .AllowAnyMethod();
                       });
