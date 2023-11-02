@@ -28,13 +28,17 @@ public class RegisterController : ControllerBase
             return BadRequest("Incorrect mail Id");
         }
         var resp = await _authService.GetUserAsync(user.UserName);
-        //_verificationService.sendVerificationMail(user.UserName, user.Name);
 
         if(resp is null)
         {
             await _authService.CreateAsync(user);
+            _verificationService.sendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
 
             return Ok("User Succesfully created");
+        } else if (resp.Verified is false)
+        {
+            await _authService.UpdateAsync(resp.Id, resp);
+            _verificationService.sendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
         }
         return BadRequest("User already exists");
     }

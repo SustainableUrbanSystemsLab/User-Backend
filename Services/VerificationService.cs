@@ -11,11 +11,16 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using Urbano_API.Models;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Urbano_API.Services
 {
     public class VerificationService
     {
+        private static string emailVerificationBody = File.ReadAllText("Utils/EmailVerificationBody.html");
+        private static string otpVerificationBody = File.ReadAllText("Utils/PasswordChangeOTPBody.html");
+
         private readonly IConfiguration configuration;
         private readonly IMongoCollection<Verification> _verificationCollection;
         private readonly string _apiKey;
@@ -46,12 +51,13 @@ namespace Urbano_API.Services
             var from = new EmailAddress(_fromEmail, _fromName);
             var subject = "Verify your email address";
             var to = new EmailAddress(email, name);
-            var plainTextContent = "This email address was recently used to log into Urbano. If this was you, please verify your email address by clicking the following link:\n\n";
+            var plainTextContent = "";//"This email address was recently used to log into Urbano. If this was you, please verify your email address by clicking the following link:\n\n";
             var claims = new List<Claim> {
                     new Claim(ClaimTypes.Email, email),
                 };
-            string url = $"{configuration.GetValue<string>("SecretKey")}/{CreateToken(claims)}";
-            var htmlContent = $"<a href = {url}>Confirm my account</a>";
+            string url = $"{configuration.GetValue<string>("UiURL")}/{CreateToken(claims)}";
+            //var htmlContent = $"<a href = {url}>Confirm my account</a>";
+            var htmlContent = emailVerificationBody.Replace("{VerificationUrl}", url);
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = client.SendEmailAsync(msg);
         }
@@ -63,10 +69,10 @@ namespace Urbano_API.Services
             var subject = "Verify your email address";
             var to = new EmailAddress(email, name);
             var plainTextContent = "Password change request was recently raised on this email address:\n\n";
-
             var otp = (OTPGeneratorService.NextInt() % 10000).ToString("0000");
             await this.UpsertAsync(otp, email);
-            var htmlContent = $"<div>OTP to validate your account: {otp} </div>";
+            //var htmlContent = $"<div>OTP to validate your account: {otp} </div>";
+            var htmlContent = otpVerificationBody.Replace("{UserName}", name).Replace("{OTP}", otp);
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = client.SendEmailAsync(msg);
         }
