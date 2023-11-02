@@ -55,12 +55,9 @@ namespace Urbano_API.Services
             var claims = new List<Claim> {
                     new Claim(ClaimTypes.Email, email),
                 };
-            string url = $"{configuration.GetValue<string>("UiURL")}/{CreateToken(claims)}";
+            string url = $"{configuration.GetValue<string>("ApiURL")}/Verification/{CreateToken(claims)}";
             //var htmlContent = $"<a href = {url}>Confirm my account</a>";
-            Console.WriteLine(emailVerificationBody);
-            Console.WriteLine("---------");
             var htmlContent = emailVerificationBody.Replace("{VerificationUrl}", url);
-            Console.WriteLine(htmlContent);
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = client.SendEmailAsync(msg);
         }

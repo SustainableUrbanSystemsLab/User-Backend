@@ -12,11 +12,13 @@ namespace Urbano_API.Controllers;
 [Route("[controller]")]
 public class VerificationController : ControllerBase
 {
+    private readonly IConfiguration configuration;
     private readonly AuthService _authService;
     private readonly VerificationService _verificationService;
 
-    public VerificationController(AuthService authService, VerificationService verificationService)
+    public VerificationController(IConfiguration configuration, AuthService authService, VerificationService verificationService)
     {
+        this.configuration = configuration;
         _authService = authService;
         _verificationService = verificationService;
     }
@@ -42,8 +44,8 @@ public class VerificationController : ControllerBase
             if(user.Id != null)
             {
                 await _authService.UpdateAsync(user.Id, user);
-
-                return Redirect("http://localhost:5173/login");
+                string url = $"{configuration.GetValue<string>("UiURL")}/Login";
+                return Redirect(url);
             }
         }
 
