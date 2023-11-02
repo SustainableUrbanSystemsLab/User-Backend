@@ -37,8 +37,12 @@ public class RegisterController : ControllerBase
             return Ok("User Succesfully created");
         } else if (resp.Verified is false)
         {
+            resp.FirstName = user.FirstName;
+            resp.LastName = user.LastName;
+            resp.Password = user.Password;
             await _authService.UpdateAsync(resp.Id, resp);
             _verificationService.sendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
+            return Ok("User Succesfully created");
         }
         return BadRequest("User already exists");
     }

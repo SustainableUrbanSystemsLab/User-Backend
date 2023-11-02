@@ -18,8 +18,8 @@ namespace Urbano_API.Services
 {
     public class VerificationService
     {
-        private static string emailVerificationBody = File.ReadAllText("Utils/EmailVerificationBody.html");
-        private static string otpVerificationBody = File.ReadAllText("Utils/PasswordChangeOTPBody.html");
+        private static string emailVerificationBody = File.ReadAllText("Assets/EmailVerificationBody.html");
+        private static string otpVerificationBody = File.ReadAllText("Assets/PasswordChangeOTPBody.html");
 
         private readonly IConfiguration configuration;
         private readonly IMongoCollection<Verification> _verificationCollection;
@@ -57,7 +57,10 @@ namespace Urbano_API.Services
                 };
             string url = $"{configuration.GetValue<string>("UiURL")}/{CreateToken(claims)}";
             //var htmlContent = $"<a href = {url}>Confirm my account</a>";
+            Console.WriteLine(emailVerificationBody);
+            Console.WriteLine("---------");
             var htmlContent = emailVerificationBody.Replace("{VerificationUrl}", url);
+            Console.WriteLine(htmlContent);
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = client.SendEmailAsync(msg);
         }

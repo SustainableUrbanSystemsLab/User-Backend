@@ -21,11 +21,11 @@
   <ItemGroup>
     <None Remove="Models\" />
     <None Remove="Services\" />
-    <None Remove="Utils\" />
+    <None Remove="Assets\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
     <Folder Include="Services\" />
-    <Folder Include="Utils\" />
+    <Folder Include="Assets\" />
   </ItemGroup>
 </Project>
