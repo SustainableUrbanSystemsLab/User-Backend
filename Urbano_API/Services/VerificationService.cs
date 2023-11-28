@@ -43,7 +43,7 @@ public class VerificationService: IVerificationService
         var claims = new List<Claim> {
                 new Claim(ClaimTypes.Email, email),
             };
-        string url = $"{configuration.GetValue<string>("ApiURL")}/Verification/{CreateToken(claims)}";
+        string url = $"{configuration.GetValue<string>("ApiURL")}/verify/{CreateToken(claims)}";
         var htmlContent = emailVerificationBody.Replace("{VerificationUrl}", url);
         var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
         var response = client.SendEmailAsync(msg);

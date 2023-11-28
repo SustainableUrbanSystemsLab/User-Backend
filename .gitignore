@@ -3,3 +3,5 @@ obj
 Urbano_API/Urbano_API.csproj.user
 *.vsidx
 .vs/Urbano_API/v17/.suo
+*.testlog
+.vs/Urbano_API/v17/TestStore/0/testlog.manifest
