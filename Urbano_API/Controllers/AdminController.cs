@@ -1,22 +1,21 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using System.Text;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
 using Urbano_API.Services;
 using Urbano_API.Models;
+using Urbano_API.Repositories;
+
 namespace Urbano_API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
 public class AdminController: ControllerBase
 {
-    private readonly AuthService _authService;
+    private readonly UserRepository _userRepository;
 
-    public AdminController(AuthService authService)
+    public AdminController(UserRepository userRepository)
 	{
-        _authService = authService;
+        _userRepository = userRepository;
     }
 
     [HttpPost]
@@ -34,13 +33,13 @@ public class AdminController: ControllerBase
 
         var name = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value;
         
-        var admin = await _authService.GetUserAsync(name);
+        var admin = await _userRepository.GetUserAsync(name);
         if (admin is null)
         {
             return BadRequest("User doesn't exist");
         }
 
-        var user = await _authService.GetUserAsync(userName);
+        var user = await _userRepository.GetUserAsync(userName);
 
         if (user == null)
         {
@@ -52,7 +51,7 @@ public class AdminController: ControllerBase
         user.attemptsLeft = maxAttempts;
 
     
-        await _authService.UpdateAsync(user.Id, user);
+        await _userRepository.UpdateAsync(user.Id, user);
 
         return Ok("Succesfully updated");
     }

@@ -1,5 +1,7 @@
 ﻿using Urbano_API.Models;
 using Urbano_API.Services;
+using Urbano_API.Repositories;
+using Urbano_API.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,9 +24,10 @@ builder.Services.Configure<UrbanoStoreDatabaseSettings>(
 builder.Services.Configure<UrbanoStoreEmailSettings>(
     builder.Configuration.GetSection("Mailing"));
 
-builder.Services.AddSingleton<AuthService>();
-builder.Services.AddSingleton<VerificationService>();
-
+builder.Services.AddSingleton<IAuthService, AuthService>();
+builder.Services.AddSingleton<IVerificationService, VerificationService>();
+builder.Services.AddSingleton<IUserRepository, UserRepository>();
+builder.Services.AddSingleton<IVerificationRepository, VerificationRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

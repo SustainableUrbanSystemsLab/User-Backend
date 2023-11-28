@@ -1,2 +1,8 @@
 bin
 obj
+Urbano_API/Urbano_API.csproj.user
+*.vsidx
+**/.suo
+*.testlog
+**/testlog.manifest
+**/.DS_Store

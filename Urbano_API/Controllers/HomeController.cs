@@ -1,9 +1,8 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Urbano_API.Services;
-using static Urbano_API.Controllers.ResetPasswordController;
+using Urbano_API.Repositories;
 
 namespace Urbano_API.Controllers;
 
@@ -11,13 +10,11 @@ namespace Urbano_API.Controllers;
 [Route("[controller]")]
 public class HomeController : ControllerBase
 {
-    private readonly AuthService _authService;
-    private readonly VerificationService _verificationService;
-
-    public HomeController(AuthService authService, VerificationService verificationService)
+    private readonly UserRepository _userRepository;
+    
+    public HomeController(UserRepository userRepository)
     {
-        _authService = authService;
-        _verificationService = verificationService;
+        _userRepository = userRepository;
     }
 
     [HttpPost]
@@ -27,7 +24,7 @@ public class HomeController : ControllerBase
         var jwtSecurityToken = handler.ReadJwtToken(token);
         var userName = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value;
 
-        var user = await _authService.GetUserAsync(userName);
+        var user = await _userRepository.GetUserAsync(userName);
 
         if(user == null)
         {
@@ -38,7 +35,7 @@ public class HomeController : ControllerBase
         if (user.Date.CompareTo(DateTime.Today.AddHours(-24)) <= 0) {
             user.attemptsLeft = user.maxAttempts;
             user.Date = DateTime.Now;
-            await _authService.UpdateAsync(user.Id, user);
+            await _userRepository.UpdateAsync(user.Id, user);
         } else if(user.attemptsLeft == 0)
         {
             ModelState.AddModelError("Unauthorized", "Request Limit Reached");
@@ -46,7 +43,7 @@ public class HomeController : ControllerBase
         }
 
         user.attemptsLeft -= 1;
-        await _authService.UpdateAsync(user.Id, user);
+        await _userRepository.UpdateAsync(user.Id, user);
 
         return Ok("Succesfully logged in");
     }
