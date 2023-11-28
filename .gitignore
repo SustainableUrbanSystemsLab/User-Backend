@@ -1,2 +1,5 @@
 bin
 obj
+Urbano_API/Urbano_API.csproj.user
+*.vsidx
+.vs/Urbano_API/v17/.suo
