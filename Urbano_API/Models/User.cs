@@ -38,5 +38,6 @@ public class User
 enum Roles
 {
     ADMIN,
-    USER
+    USER,
+    VIP
 }
