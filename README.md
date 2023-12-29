@@ -12,3 +12,7 @@ Connection string:
 [Web Login](https://cloud.mongodb.com/v2/652813be4ab4f40f3379b837#/overview)  
 Username: `mail@urbano.io`  
 Password: `^it59pgzNP&V&83zQ$7y`
+
+---
+Related Repos:  
+https://github.com/kastnerp/Urbano-Frontend  
