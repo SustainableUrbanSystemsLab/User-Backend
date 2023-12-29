@@ -136,10 +136,12 @@ public class AuthController: ControllerBase
             return Unauthorized(ModelState);
         }
 
+        var expiresAt = DateTime.UtcNow.AddMinutes(10);
+
         var claims = new List<Claim> {
                     new Claim(ClaimTypes.Email, verUser.UserName),
                 };
-        string token = _verificationService.CreateToken(claims);
+        string token = _verificationService.CreateToken(claims, expiresAt);
 
         return Ok(token);
     }
