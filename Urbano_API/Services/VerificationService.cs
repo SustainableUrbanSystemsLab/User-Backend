@@ -9,6 +9,7 @@ using System.Text;
 
 using Urbano_API.Models;
 using Urbano_API.Interfaces;
+using System;
 
 namespace Urbano_API.Services;
 
@@ -43,7 +44,7 @@ public class VerificationService: IVerificationService
         var claims = new List<Claim> {
                 new Claim(ClaimTypes.Email, email),
             };
-        string url = $"{configuration.GetValue<string>("ApiURL")}/verify/{CreateToken(claims)}";
+        string url = $"{configuration.GetValue<string>("ApiURL")}/verify/{CreateToken(claims, DateTime.UtcNow.AddMinutes(10))}";
         var htmlContent = emailVerificationBody.Replace("{VerificationUrl}", url);
         var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
         var response = client.SendEmailAsync(msg);

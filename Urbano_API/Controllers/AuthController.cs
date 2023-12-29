@@ -6,6 +6,7 @@ using Urbano_API.DTOs;
 using Urbano_API.Models;
 using Urbano_API.Interfaces;
 using System.Security.Cryptography;
+using System;
 
 namespace Urbano_API.Controllers;
 
@@ -43,6 +44,8 @@ public class AuthController: ControllerBase
             return Unauthorized(ModelState);
         }
 
+        var expiresAt = DateTime.UtcNow.AddMinutes(10);
+
         // Verify the credential
         if (resp.Verified == true && resp.UserName == credential.UserName && CryptographicOperations.FixedTimeEquals(Convert.FromHexString(_authService.GeneratePasswordHash(credential.Password)), Convert.FromHexString(resp.Password)))
         {
@@ -55,7 +58,8 @@ public class AuthController: ControllerBase
 
             return Ok(new
             {
-                access_token = _verificationService.CreateToken(claims),
+                access_token = _verificationService.CreateToken(claims, expiresAt),
+                expires_at = expiresAt
             });
 
         }
