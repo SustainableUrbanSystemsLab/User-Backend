@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Urbano_API.DTOs;
 using Urbano_API.Models;
 using Urbano_API.Interfaces;
+using System.Security.Cryptography;
 
 namespace Urbano_API.Controllers;
 
@@ -43,7 +44,7 @@ public class AuthController: ControllerBase
         }
 
         // Verify the credential
-        if (resp.Verified == true && resp.UserName == credential.UserName && credential.Password == resp.Password)
+        if (resp.Verified == true && resp.UserName == credential.UserName && CryptographicOperations.FixedTimeEquals(Convert.FromHexString(_authService.GeneratePasswordHash(credential.Password)), Convert.FromHexString(resp.Password)))
         {
             // Creating the security context
             var claims = new List<Claim> {
@@ -69,7 +70,7 @@ public class AuthController: ControllerBase
     public async Task<IActionResult> Register([FromBody] UserDTO userDTO)
     {
         User user = userDTO.GetUser();
-        if (!_authService.isValidUserName(user.UserName))
+        if (!_authService.IsValidUserName(user.UserName))
         {
             return BadRequest("Incorrect mail Id");
         }
@@ -77,6 +78,7 @@ public class AuthController: ControllerBase
 
         if (resp is null)
         {
+            user.Password = _authService.GeneratePasswordHash(user.Password);
             await _userRepository.CreateAsync(user);
             _verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
 
@@ -86,7 +88,7 @@ public class AuthController: ControllerBase
         {
             resp.FirstName = user.FirstName;
             resp.LastName = user.LastName;
-            resp.Password = user.Password;
+            resp.Password = _authService.GeneratePasswordHash(user.Password);
             await _userRepository.UpdateAsync(resp.Id, resp);
             _verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
             return Ok("User Succesfully created");
@@ -99,7 +101,7 @@ public class AuthController: ControllerBase
     [HttpPost("/otp/generate")]
     public async Task<IActionResult> GenerateOTP([FromBody] OTPDTO emailObj)
     {
-        if (!_authService.isValidUserName(emailObj.UserName))
+        if (!_authService.IsValidUserName(emailObj.UserName))
         {
             return BadRequest("Incorrect mail Id");
         }
@@ -192,7 +194,7 @@ public class AuthController: ControllerBase
             return BadRequest("User doesn't exist");
         }
 
-        user.Password = verPass.Password;
+        user.Password = _authService.GeneratePasswordHash(verPass.Password);
         await _userRepository.UpdateAsync(user.Id, user);
 
         return Ok("User Succesfully created");

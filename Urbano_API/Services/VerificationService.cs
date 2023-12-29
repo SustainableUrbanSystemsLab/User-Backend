@@ -75,7 +75,7 @@ public class VerificationService: IVerificationService
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(secretKey),
-                ValidateLifetime = false,
+                ValidateLifetime = true,
                 ValidateAudience = false,
                 ValidateIssuer = false,
                 ClockSkew = TimeSpan.Zero,
@@ -90,13 +90,15 @@ public class VerificationService: IVerificationService
         }
     }
 
-    public string CreateToken(IEnumerable<Claim> claims)
+    public string CreateToken(IEnumerable<Claim> claims, DateTime expireAt)
     {
         var secretKey = Encoding.ASCII.GetBytes(configuration.GetValue<string>("SecretKey") ?? "");
 
         // generate the JWT
         var jwt = new JwtSecurityToken(
                 claims: claims,
+                notBefore: DateTime.UtcNow,
+                expires: expireAt,
                 signingCredentials: new SigningCredentials(
                     new SymmetricSecurityKey(secretKey),
                     SecurityAlgorithms.HmacSha256Signature)

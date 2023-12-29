@@ -1,6 +1,7 @@
 ﻿using Xunit;
 using Moq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using System.Security.Claims;
 
 using Urbano_API.DTOs;
 using Urbano_API.Controllers;
@@ -8,6 +9,8 @@ using Urbano_API.Models;
 using Urbano_API.Interfaces;
 using Urbano_API.Services;
 using Microsoft.Extensions.Configuration;
+using Urbano_API.Repositories;
+using System.Security.Claims;
 
 namespace Urbano_API.Tests.Controllers;
 
@@ -247,10 +250,69 @@ public class AuthControllerTests
         Assert.Equal(400, ((IStatusCodeActionResult)result.Result).StatusCode);
     }
 
+
+    [Fact]
+    public void OTP_Verify_Success()
+    {
+        // Arrange (move this logic to seperate fn)
+        Verification verification = new Verification();
+        verification.OTP = "1234";
+        verification.UserName = "test@gmail.com";
+
+        UserVerificationDTO verificationDTO= new UserVerificationDTO();
+        verificationDTO.OTP = verification.OTP;
+        verificationDTO.UserName = verification.UserName;
+
+        var claims = new List<Claim> {
+                    new Claim(ClaimTypes.Email, verification.UserName),
+                };
+
+        _verificationRepositoryMock.Setup(x => x.GetUserAsync(verification.UserName)).Returns(Task.FromResult<Verification>(verification)).Verifiable();
+        _verificationServiceMock.Setup(x => x.CreateToken(claims)).Returns("tokenString").Verifiable();
+
+        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+
+        // Act
+        var result = _authController.VerifyOTP(verificationDTO);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(200, ((IStatusCodeActionResult)result.Result).StatusCode);
+        //test if response is string or not
+    }
+
+
+
+    [Fact]
+    public void Password_Update_Success()
+    {
+        // Arrange (move this logic to seperate fn)
+        UserDTO userDTO = CreateValidUser();
+        User user = userDTO.GetUser();
+
+        PasswordDTO passwordDTO = new PasswordDTO();
+        passwordDTO.Password = userDTO.Password;
+        passwordDTO.Token = "";
+
+        _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(user)).Verifiable();
+        _userRepositoryMock.Setup(x => x.UpdateAsync(user.Id, user)).Returns(Task.FromResult<User>(user)).Verifiable();
+
+        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+
+        // Act
+        var result = _authController.UpdatePassword(passwordDTO);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(200, ((IStatusCodeActionResult)result.Result).StatusCode);
+        // test if password is updated
+    }
+
+
+
     //update password
     //verify token
     //otp verify 
 }
 
 
- 

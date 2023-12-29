@@ -10,6 +10,6 @@ public interface IVerificationService
 
     public bool Verify(string token);
 
-    public string CreateToken(IEnumerable<Claim> claims);
+    public string CreateToken(IEnumerable<Claim> claims, DateTime expireAt);
 }
 

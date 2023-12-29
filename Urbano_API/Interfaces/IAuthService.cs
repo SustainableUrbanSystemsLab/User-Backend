@@ -2,6 +2,7 @@
 
 public interface IAuthService
 {
-    public bool isValidUserName(string userName);
+    public bool IsValidUserName(string userName);
+    public String GeneratePasswordHash(String password);
 }
 
