@@ -17,15 +17,11 @@ namespace Urbano_API.Tests.Controllers;
 public class AuthControllerTests
 {
     private readonly IConfiguration configuration;
-    //private readonly IUserRepository _userRepositoryMock = A.Fake<IUserRepository>();
-    //private readonly IVerificationRepository _verificationRepositoryMock = A.Fake<IVerificationRepository>();
-    //private readonly IAuthService _authServiceMock = A.Fake<IAuthService>();
-    //private readonly IVerificationService _verificationServiceMock = A.Fake<IVerificationService>();
 
     private readonly Mock<IUserRepository> _userRepositoryMock = new();
     private readonly Mock<IVerificationRepository> _verificationRepositoryMock = new();
     private readonly Mock<IVerificationService> _verificationServiceMock = new();
-    private readonly IAuthService _authService = new AuthService();
+    private readonly Mock<IAuthService> _authServiceMock = new();
 
     public AuthControllerTests()
     {
@@ -69,7 +65,7 @@ public class AuthControllerTests
         _userRepositoryMock.Setup(x => x.CreateAsync(user)).Returns(Task.CompletedTask).Verifiable();
         _verificationServiceMock.Setup(x => x.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName)).Verifiable();
 
-        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.Register(userDTO);
@@ -93,7 +89,7 @@ public class AuthControllerTests
         _userRepositoryMock.Setup(x => x.CreateAsync(user)).Returns(Task.CompletedTask).Verifiable();
         _verificationServiceMock.Setup(x => x.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName)).Verifiable();
 
-        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.Register(userDTO);
@@ -118,7 +114,7 @@ public class AuthControllerTests
 
         _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(user)).Verifiable();
 
-        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.Login(loginDTO);
@@ -143,7 +139,7 @@ public class AuthControllerTests
 
         _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(user)).Verifiable();
 
-        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.Login(loginDTO);
@@ -167,7 +163,7 @@ public class AuthControllerTests
 
         _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(null)).Verifiable();
 
-        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.Login(loginDTO);
@@ -191,7 +187,7 @@ public class AuthControllerTests
         _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(user)).Verifiable();
         _verificationServiceMock.Setup(x => x.SendOTP(user.UserName, user.FirstName)).Verifiable();
 
-        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.GenerateOTP(oTPDTO);
@@ -216,7 +212,7 @@ public class AuthControllerTests
         _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(null)).Verifiable();
         _verificationServiceMock.Setup(x => x.SendOTP(user.UserName, user.FirstName)).Verifiable();
 
-        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.GenerateOTP(oTPDTO);
@@ -240,7 +236,7 @@ public class AuthControllerTests
         _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(null)).Verifiable();
         _verificationServiceMock.Setup(x => x.SendOTP(user.UserName, user.FirstName)).Verifiable();
 
-        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.GenerateOTP(oTPDTO);
@@ -267,10 +263,12 @@ public class AuthControllerTests
                     new Claim(ClaimTypes.Email, verification.UserName),
                 };
 
-        _verificationRepositoryMock.Setup(x => x.GetUserAsync(verification.UserName)).Returns(Task.FromResult<Verification>(verification)).Verifiable();
-        _verificationServiceMock.Setup(x => x.CreateToken(claims)).Returns("tokenString").Verifiable();
+        var expiresAt = DateTime.UtcNow.AddMinutes(10);
 
-        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        _verificationRepositoryMock.Setup(x => x.GetUserAsync(verification.UserName)).Returns(Task.FromResult<Verification>(verification)).Verifiable();
+        _verificationServiceMock.Setup(x => x.CreateToken(claims, expiresAt)).Returns("tokenString").Verifiable();
+
+        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.VerifyOTP(verificationDTO);
@@ -297,7 +295,7 @@ public class AuthControllerTests
         _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(user)).Verifiable();
         _userRepositoryMock.Setup(x => x.UpdateAsync(user.Id, user)).Returns(Task.FromResult<User>(user)).Verifiable();
 
-        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.UpdatePassword(passwordDTO);
