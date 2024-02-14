@@ -96,12 +96,12 @@ public class AuthController : ControllerBase
     {
         if (!_authService.IsValidUserName(emailObj.UserName))
         {
-            return BadRequest("Incorrect mail Id");
+            return BadRequest("Incorrect e-mail address.");
         }
         var resp = await _userRepository.GetUserAsync(emailObj.UserName);
         if (resp is null)
         {
-            return BadRequest("Incorrect mail Id");
+            return BadRequest("Incorrect e-mail address");
         }
 
         _verificationService.SendOTP(resp.UserName, resp.FirstName);
