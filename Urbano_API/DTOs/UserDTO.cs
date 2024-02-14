@@ -12,6 +12,10 @@ public class UserDTO
 
     public string LastName { get; set; } = null!;
 
+    public string Organization { get; set; } = null!;
+
+    public string AffiliationType { get; set; } = null!;
+
     public User GetUser()
     {
         User user = new User();
@@ -20,6 +24,8 @@ public class UserDTO
         user.Password = this.Password;
         user.FirstName = this.FirstName;
         user.LastName = this.LastName;
+        user.Organization = this.Organization;
+        user.AffiliationType = this.AffiliationType;
 
         return user;
     }
