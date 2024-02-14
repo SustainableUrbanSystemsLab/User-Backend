@@ -13,7 +13,7 @@ using System;
 
 namespace Urbano_API.Services;
 
-public class VerificationService: IVerificationService
+public class VerificationService : IVerificationService
 {
     private static string emailVerificationBody = File.ReadAllText("Assets/EmailVerificationBody.html");
     private static string otpVerificationBody = File.ReadAllText("Assets/PasswordChangeOTPBody.html");
@@ -23,7 +23,6 @@ public class VerificationService: IVerificationService
     private readonly string _apiKey;
     private readonly string _fromEmail;
     private readonly string _fromName;
-
 
     public VerificationService(IConfiguration configuration, IOptions<UrbanoStoreEmailSettings> urbanoStoreEmailSettings, IVerificationRepository verificationRepository)
     {
@@ -71,7 +70,6 @@ public class VerificationService: IVerificationService
 
         try
         {
-
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
@@ -84,7 +82,8 @@ public class VerificationService: IVerificationService
             SecurityToken validatedToken;
             IPrincipal principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
             return true;
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             Console.WriteLine(e);
             return false;
@@ -108,5 +107,20 @@ public class VerificationService: IVerificationService
         return new JwtSecurityTokenHandler().WriteToken(jwt);
     }
 
-}
+    public static string CreateToken(IConfiguration configuration, IEnumerable<Claim> claims, DateTime expireAt)
+    {
+        var secretKey = Encoding.ASCII.GetBytes(configuration.GetValue<string>("SecretKey") ?? "");
 
+        // generate the JWT
+        var jwt = new JwtSecurityToken(
+                claims: claims,
+                notBefore: DateTime.UtcNow,
+                expires: expireAt,
+                signingCredentials: new SigningCredentials(
+                    new SymmetricSecurityKey(secretKey),
+                    SecurityAlgorithms.HmacSha256Signature)
+            );
+
+        return new JwtSecurityTokenHandler().WriteToken(jwt);
+    }
+}

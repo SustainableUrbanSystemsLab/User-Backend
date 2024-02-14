@@ -10,6 +10,7 @@ using Urbano_API.Interfaces;
 using Urbano_API.Services;
 using Microsoft.Extensions.Configuration;
 using Urbano_API.Repositories;
+
 using System.Security.Claims;
 
 namespace Urbano_API.Tests.Controllers;
@@ -22,15 +23,17 @@ public class AuthControllerTests
     private readonly Mock<IVerificationRepository> _verificationRepositoryMock = new();
     private readonly Mock<IVerificationService> _verificationServiceMock = new();
     private readonly Mock<IAuthService> _authServiceMock = new();
+    private readonly IAuthService _authService;
 
     public AuthControllerTests()
     {
         var inMemorySettings = new Dictionary<string, string> {
-            {"TopLevelKey", "TopLevelValue"},
+            {"SecretKey", "Urbano@Test_____Urbano@Test_____"},
             {"SectionName:SomeKey", "SectionValue"},
         };
 
         configuration = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings).Build();
+        _authService = new AuthService(configuration);
     }
 
     private UserDTO CreateValidUser()
@@ -40,7 +43,7 @@ public class AuthControllerTests
         userDTO.LastName = "name";
         userDTO.UserName = "abc@gmail.com";
         userDTO.Password = "passoword@test";
-        
+
         return userDTO;
     }
 
@@ -61,7 +64,9 @@ public class AuthControllerTests
         // Arrange
         UserDTO userDTO = CreateValidUser();
         User user = userDTO.GetUser();
+        user.Password = _authService.GeneratePasswordHash(user.Password);
 
+        _authServiceMock.Setup(x => x.IsValidUserName(user.UserName)).Returns(true).Verifiable();
         _userRepositoryMock.Setup(x => x.CreateAsync(user)).Returns(Task.CompletedTask).Verifiable();
         _verificationServiceMock.Setup(x => x.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName)).Verifiable();
 
@@ -77,7 +82,6 @@ public class AuthControllerTests
         Assert.NotNull(result);
         Assert.Equal(200, ((IStatusCodeActionResult)result.Result).StatusCode);
     }
-
 
     [Fact]
     public void Register_Failure()
@@ -99,13 +103,13 @@ public class AuthControllerTests
         Assert.Equal(400, ((IStatusCodeActionResult)result.Result).StatusCode);
     }
 
-
     [Fact]
     public void Login_Success()
     {
         // Arrange (move this logic to seperate fn)
         UserDTO userDTO = CreateValidUser();
         User user = userDTO.GetUser();
+        user.Password = _authService.GeneratePasswordHash(user.Password);
         user.Verified = true;
 
         LoginDTO loginDTO = new LoginDTO();
@@ -113,8 +117,7 @@ public class AuthControllerTests
         loginDTO.Password = userDTO.Password;
 
         _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(user)).Verifiable();
-
-        AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
+        AuthController _authController = new AuthController(configuration, _authService, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
         var result = _authController.Login(loginDTO);
@@ -124,7 +127,6 @@ public class AuthControllerTests
         Assert.Equal(200, ((IStatusCodeActionResult)result.Result).StatusCode);
         // check for accessToken Field
     }
-
 
     [Fact]
     public void Login_Failure_UserNotVerified()
@@ -149,7 +151,6 @@ public class AuthControllerTests
         Assert.Equal(401, ((IStatusCodeActionResult)result.Result).StatusCode);
     }
 
-
     [Fact]
     public void Login_Failure_UserNotExists()
     {
@@ -173,7 +174,6 @@ public class AuthControllerTests
         Assert.Equal(401, ((IStatusCodeActionResult)result.Result).StatusCode);
     }
 
-
     [Fact]
     public void OTP_Generate_Success()
     {
@@ -184,6 +184,7 @@ public class AuthControllerTests
         OTPDTO oTPDTO = new OTPDTO();
         oTPDTO.UserName = userDTO.UserName;
 
+        _authServiceMock.Setup(x => x.IsValidUserName(user.UserName)).Returns(true).Verifiable();
         _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(user)).Verifiable();
         _verificationServiceMock.Setup(x => x.SendOTP(user.UserName, user.FirstName)).Verifiable();
 
@@ -197,7 +198,6 @@ public class AuthControllerTests
         Assert.Equal(200, ((IStatusCodeActionResult)result.Result).StatusCode);
         //write a test case to verify otp generation algo (service class)
     }
-
 
     [Fact]
     public void OTP_Generate_Failure_UserNotExists()
@@ -222,7 +222,6 @@ public class AuthControllerTests
         Assert.Equal(400, ((IStatusCodeActionResult)result.Result).StatusCode);
     }
 
-
     [Fact]
     public void OTP_Generate_Failure_UserNotValid()
     {
@@ -246,7 +245,6 @@ public class AuthControllerTests
         Assert.Equal(400, ((IStatusCodeActionResult)result.Result).StatusCode);
     }
 
-
     [Fact]
     public void OTP_Verify_Success()
     {
@@ -255,7 +253,7 @@ public class AuthControllerTests
         verification.OTP = "1234";
         verification.UserName = "test@gmail.com";
 
-        UserVerificationDTO verificationDTO= new UserVerificationDTO();
+        UserVerificationDTO verificationDTO = new UserVerificationDTO();
         verificationDTO.OTP = verification.OTP;
         verificationDTO.UserName = verification.UserName;
 
@@ -279,8 +277,6 @@ public class AuthControllerTests
         //test if response is string or not
     }
 
-
-
     [Fact]
     public void Password_Update_Success()
     {
@@ -290,11 +286,17 @@ public class AuthControllerTests
 
         PasswordDTO passwordDTO = new PasswordDTO();
         passwordDTO.Password = userDTO.Password;
-        passwordDTO.Token = "";
+        var expiresAt = DateTime.UtcNow.AddDays(7);
+        var claims = new List<Claim> {
+                    new Claim(ClaimTypes.Email, user.UserName),
+                    new Claim(ClaimTypes.Role, user.Role),
+                };
+
+        passwordDTO.Token = VerificationService.CreateToken(configuration, claims, expiresAt);
 
         _userRepositoryMock.Setup(x => x.GetUserAsync(user.UserName)).Returns(Task.FromResult<User>(user)).Verifiable();
         _userRepositoryMock.Setup(x => x.UpdateAsync(user.Id, user)).Returns(Task.FromResult<User>(user)).Verifiable();
-
+        _verificationServiceMock.Setup(x => x.Verify(passwordDTO.Token)).Returns(true).Verifiable();
         AuthController _authController = new AuthController(configuration, _authServiceMock.Object, _verificationServiceMock.Object, _userRepositoryMock.Object, _verificationRepositoryMock.Object);
 
         // Act
@@ -306,11 +308,7 @@ public class AuthControllerTests
         // test if password is updated
     }
 
-
-
     //update password
     //verify token
-    //otp verify 
+    //otp verify
 }
-
-
