@@ -6,7 +6,3 @@ Urbano_API/Urbano_API.csproj.user
 *.testlog
 **/testlog.manifest
 **/.DS_Store
-.vs/ProjectEvaluation/urbano_api.projects.v7.bin
-.vs/ProjectEvaluation/urbano_api.metadata.v7.bin
-.vs/Urbano_API/DesignTimeBuild/.dtbcache.v2
-.vs/Urbano_API/v17/.futdcache.v2

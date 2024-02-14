@@ -17,15 +17,12 @@ public class User
     public string FirstName { get; set; } = null!;
 
     public string LastName { get; set; } = null!;
-    public string Organization { get; set; } = null!;
 
     public bool Verified { get; set; } = false;
 
-    public int AttemptsLeft { get; set; } = 4;
+    public int attemptsLeft { get; set; } = 4;
 
-    public int MaxAttempts { get; set; } = 4;
-
-    public string AffiliationType { get; set; } = null!;
+    public int maxAttempts { get; set; } = 4;
 
     public string Role { get; set; } = Roles.USER.ToString();
 
@@ -38,16 +35,9 @@ public class User
     }
 }
 
-internal enum Roles
+enum Roles
 {
     ADMIN,
     USER,
     VIP
-}
-
-public enum AffiliationType
-{
-    RESEARCH,
-    PRACTICE,
-    GOVERNMENT
 }

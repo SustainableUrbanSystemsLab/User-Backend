@@ -33,16 +33,16 @@ public class HomeController : ControllerBase
         }
 
         if (user.Date.CompareTo(DateTime.Today.AddHours(-24)) <= 0) {
-            user.AttemptsLeft = user.MaxAttempts;
+            user.attemptsLeft = user.maxAttempts;
             user.Date = DateTime.Now;
             await _userRepository.UpdateAsync(user.Id, user);
-        } else if(user.AttemptsLeft == 0)
+        } else if(user.attemptsLeft == 0)
         {
             ModelState.AddModelError("Unauthorized", "Request Limit Reached");
             return Unauthorized(ModelState);
         }
 
-        user.AttemptsLeft -= 1;
+        user.attemptsLeft -= 1;
         await _userRepository.UpdateAsync(user.Id, user);
 
         return Ok("Succesfully logged in");
