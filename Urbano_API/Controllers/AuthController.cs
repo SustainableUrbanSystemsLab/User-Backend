@@ -10,9 +10,8 @@ using System;
 
 namespace Urbano_API.Controllers;
 
-
 [Route("[controller]")]
-public class AuthController: ControllerBase
+public class AuthController : ControllerBase
 {
     private readonly IConfiguration configuration;
     private readonly IAuthService _authService;
@@ -20,9 +19,8 @@ public class AuthController: ControllerBase
     private readonly IUserRepository _userRepository;
     private readonly IVerificationRepository _verificationRepository;
 
-
     public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository)
-	{
+    {
         this.configuration = configuration;
         _authService = authService;
         _verificationService = verificationService;
@@ -30,21 +28,18 @@ public class AuthController: ControllerBase
         _verificationRepository = verificationRepository;
     }
 
-
     [HttpPost("/login")]
     public async Task<IActionResult> Login([FromBody] LoginDTO credential)
     {
-
         var resp = await _userRepository.GetUserAsync(credential.UserName);
 
         if (resp is null)
         {
-
             ModelState.AddModelError("Unauthorized", "You are not authorized to access the endpoint.");
             return Unauthorized(ModelState);
         }
 
-        var expiresAt = DateTime.UtcNow.AddMinutes(10);
+        var expiresAt = DateTime.UtcNow.AddMonths(1);
 
         // Verify the credential
         if (resp.Verified == true && resp.UserName == credential.UserName && CryptographicOperations.FixedTimeEquals(Convert.FromHexString(_authService.GeneratePasswordHash(credential.Password)), Convert.FromHexString(resp.Password)))
@@ -55,20 +50,16 @@ public class AuthController: ControllerBase
                     new Claim(ClaimTypes.Role, resp.Role),
                 };
 
-
             return Ok(new
             {
                 access_token = _verificationService.CreateToken(claims, expiresAt),
                 expires_at = expiresAt
             });
-
         }
 
         ModelState.AddModelError("Unauthorized", "You are not authorized to access the endpoint.");
         return Unauthorized(ModelState);
     }
-
-
 
     [HttpPost("/register")]
     public async Task<IActionResult> Register([FromBody] UserDTO userDTO)
@@ -100,8 +91,6 @@ public class AuthController: ControllerBase
         return BadRequest("User already exists");
     }
 
-
-
     [HttpPost("/otp/generate")]
     public async Task<IActionResult> GenerateOTP([FromBody] OTPDTO emailObj)
     {
@@ -119,7 +108,6 @@ public class AuthController: ControllerBase
 
         return Ok("Password change request sent to mail");
     }
-
 
     [HttpPost("/otp/verify")]
     public async Task<IActionResult> VerifyOTP([FromBody] UserVerificationDTO verUser)
@@ -145,8 +133,6 @@ public class AuthController: ControllerBase
 
         return Ok(token);
     }
-
-
 
     [HttpGet("/verify/{token}")]
     public async Task<IActionResult> Verify(string token)
@@ -178,8 +164,6 @@ public class AuthController: ControllerBase
         return Unauthorized(ModelState);
     }
 
-
-
     [HttpPut("/password")]
     public async Task<IActionResult> UpdatePassword([FromBody] PasswordDTO verPass)
     {
@@ -206,4 +190,3 @@ public class AuthController: ControllerBase
         return Ok("User Succesfully created");
     }
 }
-
