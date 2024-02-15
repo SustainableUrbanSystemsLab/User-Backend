@@ -53,7 +53,7 @@ public class AuthController : ControllerBase
             return Ok(new
             {
                 access_token = _verificationService.CreateToken(claims, expiresAt),
-                expires_at = expiresAt
+                expires_at = expiresAt.Truncate(TimeSpan.FromSeconds(1))
             });
         }
 
