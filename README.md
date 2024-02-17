@@ -1,3 +1,49 @@
+# Urbano Backend
+
+## User object
+
+Copy here to visualize: https://jsoneditoronline.org/ 
+
+````
+{
+  "_id": {
+    "$oid": "65ceb752894a7be19600b051"
+  },
+  "Email": "patrick.kastner+lllll@gmail.com",
+  "Password": "DC7603BB32E",
+  "FirstName": "",
+  "LastName": "",
+  "Organization": "",
+  "Verified": true,
+  "AffiliationType": "",
+  "ModelsUsed": {
+    "Eddy3D": true,
+    "Urbano": true
+  },
+  "Role": "USER",
+  "Quotas": {
+    "CFD": {
+      "Sim_GAN": {
+        "Current": "4",
+        "Quota": 100
+      }
+    },
+    "Mobility": {
+      "Download": {
+        "Current": 5,
+        "Quota": 30
+      }
+    }
+  },
+  "Date": {
+    "$date": {
+      "$numberLong": "1708041600000"
+    }
+  }
+}
+````
+
+
 ## Sendgrid API Key
 
 > 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
