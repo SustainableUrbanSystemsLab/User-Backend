@@ -59,6 +59,13 @@ Connection string:
 Username: `mail@urbano.io`  
 Password: `^it59pgzNP&V&83zQ$7y`
 
+
+---
+
+## Postman Workspace unit tests
+
+[Link](https://martian-station-517145.postman.co/workspace/Urbano~75fc45f9-683b-48dd-9c72-28e521e52815/overview)
+
 ---
 Related Repos:  
-https://github.com/kastnerp/Urbano-Frontend  
+https://github.com/Urbano-io/Urbano-Frontend  
