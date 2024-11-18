@@ -62,7 +62,7 @@ Connection string:
 
 ## Hoppscotch Workspace unit tests
 
-[Link](https://martian-station-517145.postman.co/workspace/Urbano~75fc45f9-683b-48dd-9c72-28e521e52815/overview)
+[Link](https://hoppscotch.io)
 
 ---
 Related Repos:  
