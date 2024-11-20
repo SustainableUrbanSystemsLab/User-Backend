@@ -47,8 +47,8 @@ public class AdminController: ControllerBase
             return Unauthorized(ModelState);
         }
 
-        user.maxAttempts = maxAttempts;
-        user.attemptsLeft = maxAttempts;
+        user.MaxAttempts = maxAttempts;
+        user.AttemptsLeft = maxAttempts;
 
     
         await _userRepository.UpdateAsync(user.Id, user);

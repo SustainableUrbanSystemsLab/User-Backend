@@ -18,11 +18,15 @@ public class User
 
     public string LastName { get; set; } = null!;
 
+    public string Organization { get; set; } = null!;
+
     public bool Verified { get; set; } = false;
 
-    public int attemptsLeft { get; set; } = 4;
+    public int AttemptsLeft { get; set; } = 4;
 
-    public int maxAttempts { get; set; } = 4;
+    public int MaxAttempts { get; set; } = 4;
+
+    public string AffiliationType { get; set; } = null!;
 
     public string Role { get; set; } = Roles.USER.ToString();
 
