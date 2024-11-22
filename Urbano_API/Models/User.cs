@@ -20,7 +20,7 @@ public class User
 
     public string Organization { get; set; } = null!;
 
-    public bool Verified { get; set; } = false;
+    public bool Verified { get; set; } = true;
 
     public int AttemptsLeft { get; set; } = 4;
 

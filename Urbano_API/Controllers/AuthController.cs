@@ -75,7 +75,7 @@ public class AuthController : ControllerBase
         {
             user.Password = _authService.GeneratePasswordHash(user.Password);
             await _userRepository.CreateAsync(user);
-            _verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
+            //_verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
 
             return Ok("User Succesfully created");
         }
@@ -85,7 +85,7 @@ public class AuthController : ControllerBase
             resp.LastName = user.LastName;
             resp.Password = _authService.GeneratePasswordHash(user.Password);
             await _userRepository.UpdateAsync(resp.Id, resp);
-            _verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
+            //_verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
             return Ok("User Succesfully created");
         }
         return BadRequest("User already exists");
