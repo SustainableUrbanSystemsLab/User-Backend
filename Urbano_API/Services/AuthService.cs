@@ -52,7 +52,7 @@ public class AuthService: IAuthService
 
     public void IncrementLoginCounter(Metrics metrics)
     {
-        metrics.SuccessfulLogins++;
+        metrics.Logins++;
     }
 }
 

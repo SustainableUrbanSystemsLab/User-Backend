@@ -9,7 +9,8 @@ public class Metrics
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
 
-    public int SuccessfulLogins { get; set; } = 0;
+    public string Name { get; set; } = string.Empty;
+    public int Logins { get; set; } = 0;
 
     public Metrics() {
         Id = ObjectId.GenerateNewId().ToString();

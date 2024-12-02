@@ -53,7 +53,7 @@ public class AuthController : ControllerBase
                 };
 
             // Update SuccessfulLogins counter
-            _authService.IncrementLoginCounter(/* TODO: get the correct metrics object */)
+            _metricsRepository.IncrementLoginCounter(/* TODO: get the correct metrics object */);
 
             return Ok(new
             {

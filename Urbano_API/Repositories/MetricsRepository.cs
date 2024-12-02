@@ -17,8 +17,32 @@ public class MetricsRepository: IMetricsRepository
         var mongoDatabase = mongoClient.GetDatabase(
             urbanoStoreDatabaseSettings.Value.DatabaseName);
 
-        _usersCollection = mongoDatabase.GetCollection<User>(
+        _metricsCollection = mongoDatabase.GetCollection<Metrics>(
             urbanoStoreDatabaseSettings.Value.UsersCollectionName);
     }
-}
 
+    public async Task<Metrics?> GetMetricsByNameAsync(string name)
+    {
+        return await _metricsCollection.Find(m => m.Name == name).FirstOrDefaultAsync();
+    }
+
+    public async Task<Metrics> CreateMetricsAsync(Metrics metrics)
+    {
+        await _metricsCollection.InsertOneAsync(metrics);
+        return metrics;
+    }
+
+    public async Task<Metrics?> IncrementMetricsValueAsync(string name, int incrementBy)
+    {
+        var update = Builders<Metrics>.Update.Inc(m => m.Logins, incrementBy);
+
+        return await _metricsCollection.FindOneAndUpdateAsync<Metrics, Metrics>(
+            m => m.Name == name,
+            update,
+            new FindOneAndUpdateOptions<Metrics, Metrics>
+            {
+                ReturnDocument = ReturnDocument.After
+            }
+        );
+    }
+}
