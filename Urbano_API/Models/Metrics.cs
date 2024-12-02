@@ -10,7 +10,7 @@ public class Metrics
 
     public string? Id { get; set; }
 
-    public int counter { get; set; } = 0;
+    public int SuccessfulLogins { get; set; } = 0;
 
     public Metrics() {
         Id = ObjectId.GenerateNewId().toString();
