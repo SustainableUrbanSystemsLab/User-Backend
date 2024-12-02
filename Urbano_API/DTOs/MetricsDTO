@@ -1,0 +1,6 @@
+namespace Urbano_API.DTOs;
+
+public class MetricsDTO
+{
+    public string UserName { get; set; } = string.Empty;
+}
