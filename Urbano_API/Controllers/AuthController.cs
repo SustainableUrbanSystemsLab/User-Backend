@@ -18,6 +18,7 @@ public class AuthController : ControllerBase
     private readonly IVerificationService _verificationService;
     private readonly IUserRepository _userRepository;
     private readonly IVerificationRepository _verificationRepository;
+    private readonly IMetricsRepository _metricsRepository;
 
     public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository)
     {
@@ -26,6 +27,7 @@ public class AuthController : ControllerBase
         _verificationService = verificationService;
         _userRepository = userRepository;
         _verificationRepository = verificationRepository;
+        _metricsRepository = // TODO
     }
 
     [HttpPost("/login")]
@@ -49,6 +51,9 @@ public class AuthController : ControllerBase
                     new Claim(ClaimTypes.Email, credential.UserName),
                     new Claim(ClaimTypes.Role, resp.Role),
                 };
+
+            // Update SuccessfulLogins counter
+            _authService.IncrementLoginCounter(/* TODO: get the correct metrics object */)
 
             return Ok(new
             {
