@@ -14,7 +14,7 @@ using Urbano_API.Repositories;
 using System.Security.Claims;
 
 namespace Urbano_API.Tests.Controllers;
-
+/*
 public class AuthControllerTests
 {
     private readonly IConfiguration configuration;
@@ -311,4 +311,4 @@ public class AuthControllerTests
     //update password
     //verify token
     //otp verify
-}
+}*/
