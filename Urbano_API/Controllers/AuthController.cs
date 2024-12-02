@@ -20,14 +20,14 @@ public class AuthController : ControllerBase
     private readonly IVerificationRepository _verificationRepository;
     private readonly IMetricsRepository _metricsRepository;
 
-    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository)
+    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository)
     {
         this.configuration = configuration;
         _authService = authService;
         _verificationService = verificationService;
         _userRepository = userRepository;
         _verificationRepository = verificationRepository;
-        _metricsRepository = // TODO
+        _metricsRepository = metricsRepository;
     }
 
     [HttpPost("/login")]
@@ -53,7 +53,11 @@ public class AuthController : ControllerBase
                 };
 
             // Update SuccessfulLogins counter
-            _authService.IncrementLoginCounter(/* TODO: get the correct metrics object */)
+            var updatedMetric = await _metricsRepository.IncrementMetricsValueAsync("SuccessfulLogins", 1);
+            if (updatedMetric == null)
+            {
+                // TODO: Handle missing metric initialization.
+            }
 
             return Ok(new
             {

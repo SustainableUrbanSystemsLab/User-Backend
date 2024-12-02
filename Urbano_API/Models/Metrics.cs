@@ -5,15 +5,15 @@ namespace Urbano_API.Models;
 
 public class Metrics 
 {
-    [BSonId]
+    [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-
     public string? Id { get; set; }
 
-    public int SuccessfulLogins { get; set; } = 0;
+    public string Name { get; set; } = string.Empty;
+    public int Logins { get; set; } = 0;
 
     public Metrics() {
-        Id = ObjectId.GenerateNewId().toString();
+        Id = ObjectId.GenerateNewId().ToString();
     }
 
 }
