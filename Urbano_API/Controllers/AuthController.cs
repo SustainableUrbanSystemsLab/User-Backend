@@ -53,7 +53,11 @@ public class AuthController : ControllerBase
                 };
 
             // Update SuccessfulLogins counter
-            _metricsRepository.IncrementLoginCounter(/* TODO: get the correct metrics object */);
+            var updatedMetric = await _metricsRepository.IncrementMetricsValueAsync("SuccessfulLogins", 1);
+            if (updatedMetric == null)
+            {
+                // TODO: Handle missing metric initialization.
+            }
 
             return Ok(new
             {

@@ -18,7 +18,10 @@ public class MetricsRepository: IMetricsRepository
             urbanoStoreDatabaseSettings.Value.DatabaseName);
 
         _metricsCollection = mongoDatabase.GetCollection<Metrics>(
-            urbanoStoreDatabaseSettings.Value.UsersCollectionName);
+            urbanoStoreDatabaseSettings.Value.MetricsCollectionName);
+
+        // Ensure SuccessfulLogins metric exists
+        EnsureSuccessfulLoginsMetricExists().GetAwaiter().GetResult();  
     }
 
     public async Task<Metrics?> GetMetricsByNameAsync(string name)
@@ -44,5 +47,18 @@ public class MetricsRepository: IMetricsRepository
                 ReturnDocument = ReturnDocument.After
             }
         );
+    }
+
+    private async Task EnsureSuccessfulLoginsMetricExists()
+    {
+        var existingMetric = await _metricsCollection.Find(m => m.Name == "SuccessfulLogins").FirstOrDefaultAsync();
+        if (existingMetric == null)
+        {
+            await _metricsCollection.InsertOneAsync(new Metrics
+            {
+                Name = "SuccessfulLogins",
+                Logins = 0
+            });
+        }
     }
 }
