@@ -4,7 +4,7 @@
 
 # Eddy3D Backend
 
-Eddy3D is a cutting-edge tool designed to provide advanced simulations and visualization for environmental and fluid dynamics research. The goal of this project is to build a reliable and intuitive interface for working with simulation data, leveraging the power of modern visualization technologies.
+Eddy3D is an autoCAD extension designed to provide advanced simulations and visualization for environmental dynamics research. The goal of this project is to expand the backend, primarily adding the functionalities of (1) User Metrics, and (2) Quotas, while building upon the current user data infrastructure and enhancing the current API. 
 
 ---
 
@@ -13,39 +13,53 @@ Eddy3D is a cutting-edge tool designed to provide advanced simulations and visua
 ## Version 0.0.0
 
 ### Features
-- **Basic Metrics Compatibility**:  
-  A minimal infrastructure for interacting with Eddy3D user login data. Includes functionality to integrate with existing MongoDB backend and build upon it for metrics tracking.  
+- **Basic User Data**:  
+  - User registration and login
+  - User verification dissabled
+
+- **Basic Metrics**:  
+  - A basic foundation for user metrics
+  - Tracks successfull logins
+  - Auto-initialization check of metrics model
 
 ### Bug Fixes
-- None in this release. This is the initial build.  
+- This is the initial build
 
 ### Known Issues
-- None currently.
+- No error handeling for metrics api calls
+- Strange delay/issue with daily login incrementing sometimes
+- HTTPS resolve warnings
 
 ---
 
 # Technology Stack
 
 - **Platforms**:  
-  Any platform
+  - Windows
+  - Mac
+  - Linux
 
 - **Frameworks**:  
   - Eddy3D core engine (proprietary).  
   - .NET 7.0.20.  
+  - MongoDB
 
 - **Programming Languages**:  
-  C# for scripting and backend logic.  
+  - C#
+  - .NET
+  - MongoDB
 
 - **Data Storage**:  
-  Storage of metrics data in MongoDB formats.  
+  - MongoDB
+    - User data
+    - Metrics data  
 
 ---
 
 # Rationale for Artifact Selection
-For version 0.0.0, we focused on implementing the essential metrics tracking infrastructure. This decision was made to kickstart the integration of overall advanced user tracking into Eddy3D.
+Version 0.0.0 focused on implementing the essential metrics tracking infrastructure. This decision was made to kickstart the integration of advanced user tracking into Eddy3D. Alongside this comes the re-intergration of basic user data and their functionalities for testing.
 
 ---
-
 
 ## Sendgrid API Key (account under audit)
 
@@ -53,19 +67,12 @@ For version 0.0.0, we focused on implementing the essential metrics tracking inf
 
 ---
 
-## www.render.com deployment settings
-
-
-![](Misc/Render_Settings_Frontend.png)
-![](Misc/Render_Settings_Backend.png)
-
 ## MongoDB on Atlas
 Connection string: 
 
 > `mongodb+srv://admin:Goofiness-Battle4-Prodigal@urbano-backend-users.syw1bpp.mongodb.net/?retryWrites=true&w=majority`
 
 [Web Login](https://cloud.mongodb.com/v2/652813be4ab4f40f3379b837#/overview)  
-
 
 ---
 
