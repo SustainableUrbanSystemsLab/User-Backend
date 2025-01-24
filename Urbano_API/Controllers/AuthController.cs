@@ -19,8 +19,9 @@ public class AuthController : ControllerBase
     private readonly IUserRepository _userRepository;
     private readonly IVerificationRepository _verificationRepository;
     private readonly IMetricsRepository _metricsRepository;
+    private readonly IRegistrationsRepository _registrationsRepository;
 
-    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository)
+    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IRegistrationsRepository registrationsRepository)
     {
         this.configuration = configuration;
         _authService = authService;
@@ -28,6 +29,7 @@ public class AuthController : ControllerBase
         _userRepository = userRepository;
         _verificationRepository = verificationRepository;
         _metricsRepository = metricsRepository;
+        _registrationsRepository = registrationsRepository;
     }
 
     [HttpPost("/login")]
@@ -86,6 +88,14 @@ public class AuthController : ControllerBase
             await _userRepository.CreateAsync(user);
             //_verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
 
+            // Update all temporal registrations counters
+            var updatedRegistration = await _registrationsRepository.IncrementRegistrationsDailyValueAsync(DateTime.UtcNow, 1);
+            if (updatedRegistration == null)
+            {
+                // TODO: Handle missing registration initialization.
+            }
+            // TODO: Also handle weekly, monthly, yearly when implemented
+
             return Ok("User Succesfully created");
         }
         else if (resp.Verified is false)
@@ -95,6 +105,14 @@ public class AuthController : ControllerBase
             resp.Password = _authService.GeneratePasswordHash(user.Password);
             await _userRepository.UpdateAsync(resp.Id, resp);
             //_verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
+
+            var updatedRegistration = await _registrationsRepository.IncrementRegistrationsDailyValueAsync(DateTime.UtcNow, 1);
+            if (updatedRegistration == null)
+            {
+                // TODO: Handle missing registration initialization.
+            }
+            // TODO: Also handle weekly, monthly, yearly when implemented
+
             return Ok("User Succesfully created");
         }
         return BadRequest("User already exists");

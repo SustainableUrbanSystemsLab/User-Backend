@@ -49,10 +49,5 @@ public class AuthService: IAuthService
 
         return Convert.ToHexString(hash);
     }
-
-    public void IncrementLoginCounter(Metrics metrics)
-    {
-        metrics.Logins++;
-    }
 }
 
