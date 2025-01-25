@@ -19,8 +19,9 @@ public class AuthController : ControllerBase
     private readonly IUserRepository _userRepository;
     private readonly IVerificationRepository _verificationRepository;
     private readonly IMetricsRepository _metricsRepository;
+     private readonly IWalletRepository _walletRepository;
 
-    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository)
+    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IWalletRepository walletRepository)
     {
         this.configuration = configuration;
         _authService = authService;
@@ -28,6 +29,7 @@ public class AuthController : ControllerBase
         _userRepository = userRepository;
         _verificationRepository = verificationRepository;
         _metricsRepository = metricsRepository;
+        _walletRepository = walletRepository;
     }
 
     [HttpPost("/login")]
@@ -85,6 +87,20 @@ public class AuthController : ControllerBase
             user.Password = _authService.GeneratePasswordHash(user.Password);
             await _userRepository.CreateAsync(user);
             //_verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
+
+            // Create a Wallet for New User
+            var existingWallet = await _walletRepository.GetWalletByUserIdAsync(user.Id!);
+            if (existingWallet is null)
+            {
+                Wallet wallet = new Wallet(user.Id!)
+                {
+                    QuotaTokens = new List<QuotaToken>
+                    {
+                        new QuotaToken { Type = "DefaultToken", Quantity = 0 }
+                    }
+                };
+                await _walletRepository.CreateAsync(wallet);
+        }
 
             return Ok("User Succesfully created");
         }

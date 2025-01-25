@@ -18,7 +18,7 @@ public class WalletRepository: IWalletRepository
             urbanoStoreDatabaseSettings.Value.DatabaseName);
 
         _wallets = mongoDatabase.GetCollection<Wallet>(
-            urbanoStoreDatabaseSettings.Value.UsersCollectionName);
+            urbanoStoreDatabaseSettings.Value.WalletCollectionName);
     }
 
     public async Task<List<Wallet>> GetAsync() =>
