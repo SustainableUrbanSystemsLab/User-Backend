@@ -64,8 +64,6 @@ public class AuthController : ControllerBase
             }
             // Update SuccessfulLogins Counter Daily
             var updatedLoginDaily = await _loginsRepository.IncrementLoginsDailyValueAsync(DateTime.UtcNow, 1);
-            Console.WriteLine("Daily");
-            Console.WriteLine(updatedLoginDaily);
             if (updatedLoginDaily == null)
             {
                 // TODO: Handle missing login. daily counter.
@@ -73,11 +71,23 @@ public class AuthController : ControllerBase
 
             // Update SuccessfulLogins Counter Weekly
             var updatedLoginWeekly = await _loginsRepository.IncrementLoginsWeeklyValueAsync(DateTime.UtcNow, 1);
-            Console.WriteLine("Weekly");
-            Console.WriteLine(updatedLoginWeekly);
             if (updatedLoginWeekly == null)
             {
                 // TODO: Handle missing login. Weekly counter.
+            }
+
+            // Update SuccessfulLogins Counter Monthly
+            var updatedLoginMonthly = await _loginsRepository.IncrementLoginsMonthlyValueAsync(DateTime.UtcNow, 1);
+            if (updatedLoginMonthly == null)
+            {
+                // TODO: Handle missing login. Monthly counter.
+            }
+
+            // Update SuccessfulLogins Counter Yearly
+            var updatedLoginYearly = await _loginsRepository.IncrementLoginsYearlyValueAsync(DateTime.UtcNow, 1);
+            if (updatedLoginYearly == null)
+            {
+                // TODO: Handle missing login. Yearly counter.
             }
 
             return Ok(new

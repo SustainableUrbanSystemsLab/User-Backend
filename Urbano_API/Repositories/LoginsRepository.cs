@@ -33,12 +33,12 @@ public class LoginsRepository: ILoginsRepository
 
     public async Task<Logins?> IncrementLoginsDailyValueAsync(DateTime date, int incrementBy)
     {
-        var dateOnly = date.Date;
-        var filter = Builders<Logins>.Filter.Eq(r => r.Date, dateOnly);
+        var dayString = date.ToString("yyyy-MM-dd");
+        var filter = Builders<Logins>.Filter.Eq(r => r.DailyLoginDate, dayString);
 
         // Remove SetOnInsert for DailyLoginCount to avoid conflict with Inc
         var update = Builders<Logins>.Update
-            .SetOnInsert(r => r.Date, dateOnly)
+            .SetOnInsert(r => r.DailyLoginDate, dayString)
             .Inc(r => r.DailyLoginCount, incrementBy);
 
         var options = new FindOneAndUpdateOptions<Logins>
@@ -78,13 +78,15 @@ public class LoginsRepository: ILoginsRepository
         // Compute Monday of the given date's week
         var startOfWeek = GetMonday(date);  // uses the helper from above
 
+        var weekString = startOfWeek.ToString("yyyy-MM-dd");
+
         // We filter by that Monday date to ensure all logins in the same week 
         // go into the same document
-        var filter = Builders<Logins>.Filter.Eq(x => x.Date, startOfWeek);
+        var filter = Builders<Logins>.Filter.Eq(x => x.WeeklyLoginDate, weekString);
 
         
         var update = Builders<Logins>.Update
-            .SetOnInsert(r => r.Date, startOfWeek)
+            .SetOnInsert(r => r.WeeklyLoginDate, weekString)
             .Inc(r => r.WeeklyLoginCount, incrementBy);
 
         var options = new FindOneAndUpdateOptions<Logins>
@@ -98,6 +100,65 @@ public class LoginsRepository: ILoginsRepository
             var updatedLogin = await _loginsWeeklyCollection
                 .FindOneAndUpdateAsync(filter, update, options);
 
+            return updatedLogin;
+        }
+        catch (MongoCommandException ex)
+        {
+            Console.WriteLine($"MongoDB error: {ex.Message}");
+            throw;
+        }
+    }
+
+    public async Task<Logins?> IncrementLoginsMonthlyValueAsync(DateTime date, int incrementBy)
+    {
+        var monthString = date.ToString("yyyy-MM");
+
+        var filter = Builders<Logins>.Filter.Eq(r => r.MonthlyLoginDate, monthString);
+
+        // Remove SetOnInsert for DailyLoginCount to avoid conflict with Inc
+        var update = Builders<Logins>.Update
+            .SetOnInsert(r => r.MonthlyLoginDate, monthString)
+            .Inc(r => r.MonthlyLoginCount, incrementBy);
+
+        var options = new FindOneAndUpdateOptions<Logins>
+        {
+            IsUpsert = true,
+            ReturnDocument = ReturnDocument.After
+        };
+
+        try
+        {
+            var updatedLogin = await _loginsMonthlyCollection
+                .FindOneAndUpdateAsync(filter, update, options);
+            return updatedLogin;
+        }
+        catch (MongoCommandException ex)
+        {
+            Console.WriteLine($"MongoDB error: {ex.Message}");
+            throw;
+        }
+    }
+
+    public async Task<Logins?> IncrementLoginsYearlyValueAsync(DateTime date, int incrementBy)
+    {
+        var yearString = date.ToString("yyyy");
+        var filter = Builders<Logins>.Filter.Eq(r => r.YearlyLoginDate, yearString);
+
+        // Remove SetOnInsert for DailyLoginCount to avoid conflict with Inc
+        var update = Builders<Logins>.Update
+            .SetOnInsert(r => r.YearlyLoginDate, yearString)
+            .Inc(r => r.YearlyLoginCount, incrementBy);
+
+        var options = new FindOneAndUpdateOptions<Logins>
+        {
+            IsUpsert = true,
+            ReturnDocument = ReturnDocument.After
+        };
+
+        try
+        {
+            var updatedLogin = await _loginsYearlyCollection
+                .FindOneAndUpdateAsync(filter, update, options);
             return updatedLogin;
         }
         catch (MongoCommandException ex)
