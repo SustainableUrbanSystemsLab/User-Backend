@@ -20,8 +20,9 @@ public class AuthController : ControllerBase
     private readonly IVerificationRepository _verificationRepository;
     private readonly IMetricsRepository _metricsRepository;
      private readonly IWalletRepository _walletRepository;
+    private readonly ILoginsRepository _loginsRepository;
 
-    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IWalletRepository walletRepository)
+    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IWalletRepository walletRepository, ILoginsRepository loginsRepository)
     {
         this.configuration = configuration;
         _authService = authService;
@@ -30,6 +31,7 @@ public class AuthController : ControllerBase
         _verificationRepository = verificationRepository;
         _metricsRepository = metricsRepository;
         _walletRepository = walletRepository;
+        _loginsRepository = loginsRepository;
     }
 
     [HttpPost("/login")]
@@ -59,6 +61,23 @@ public class AuthController : ControllerBase
             if (updatedMetric == null)
             {
                 // TODO: Handle missing metric initialization.
+            }
+            // Update SuccessfulLogins Counter Daily
+            var updatedLoginDaily = await _loginsRepository.IncrementLoginsDailyValueAsync(DateTime.UtcNow, 1);
+            Console.WriteLine("Daily");
+            Console.WriteLine(updatedLoginDaily);
+            if (updatedLoginDaily == null)
+            {
+                // TODO: Handle missing login. daily counter.
+            }
+
+            // Update SuccessfulLogins Counter Weekly
+            var updatedLoginWeekly = await _loginsRepository.IncrementLoginsWeeklyValueAsync(DateTime.UtcNow, 1);
+            Console.WriteLine("Weekly");
+            Console.WriteLine(updatedLoginWeekly);
+            if (updatedLoginWeekly == null)
+            {
+                // TODO: Handle missing login. Weekly counter.
             }
 
             return Ok(new
