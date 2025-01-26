@@ -7,6 +7,7 @@ using Urbano_API.Models;
 using Urbano_API.Interfaces;
 using System.Security.Cryptography;
 using System;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 namespace Urbano_API.Controllers;
 
@@ -115,6 +116,20 @@ public class AuthController : ControllerBase
 
             return Ok("User Succesfully created");
         }
+        return BadRequest("User already exists");
+    }
+
+    [HttpPost("/simulate")]
+    public async Task<IActionResult> Simulate([FromBody] UserDTO userDTO, [FromBody] string token)
+    {
+        User user = userDTO.GetUser();
+        if (!_authService.IsValidUserName(user.UserName))
+        {
+            return BadRequest("Incorrect mail Id");
+        }
+        var resp = await _userRepository.GetUserAsync(user.UserName);
+
+        //todo
         return BadRequest("User already exists");
     }
 

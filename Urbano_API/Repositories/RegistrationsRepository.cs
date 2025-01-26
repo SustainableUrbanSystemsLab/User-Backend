@@ -42,12 +42,10 @@ public class RegistrationsRepository: IRegistrationsRepository
             IsUpsert = true,
             ReturnDocument = ReturnDocument.After
         };
-
         try
         {
             var updatedRegistration = await _registrationsDailyCollection
                 .FindOneAndUpdateAsync(filter, update, options);
-
             return updatedRegistration;
         }
         catch (MongoException ex)
@@ -59,16 +57,87 @@ public class RegistrationsRepository: IRegistrationsRepository
     public async Task<Registrations?> IncrementRegistrationsWeeklyValueAsync(DateTime date, int incrementBy)
     {
         
-        return null;
+        DateTime GetMonday(DateTime inputDate)
+        {
+            int dayOfWeek = (int)inputDate.DayOfWeek;  
+            // 'dayOfWeek' => Sunday=0, Monday=1, ... Saturday=6
+
+            // If date is Sunday (0), we want to go back 6 days; if Monday (1), go back 0 days; etc.
+            // This formula effectively sets Monday=0, Tuesday=1, ... Sunday=6
+            // so subtracting that from the date gets us back to Monday.
+            int offset = (dayOfWeek == 0) ? 6 : dayOfWeek - 1; 
+            return inputDate.Date.AddDays(-offset);
+        }
+        // Compute Monday of the given date's week
+        var startOfWeek = GetMonday(date);  // uses the helper from above
+
+        var weekString = startOfWeek.ToString("yyyy-MM-dd");
+        var filter = Builders<Registrations>.Filter.Eq(r => r.Date, weekString);
+        var update = Builders<Registrations>.Update
+            .SetOnInsert(r => r.Date, weekString)
+            .Inc(r => r.RegistrationsCount, incrementBy);
+        var options = new FindOneAndUpdateOptions<Registrations>
+        {
+            IsUpsert = true,
+            ReturnDocument = ReturnDocument.After
+        };
+        try
+        {
+            var updatedRegistration = await _registrationsWeeklyCollection
+                .FindOneAndUpdateAsync(filter, update, options);
+            return updatedRegistration;
+        }
+        catch (MongoException ex)
+        {
+            throw new Exception("An error occurred while incrementing weekly registrations.", ex);
+        }
     }
 
     public async Task<Registrations?> IncrementRegistrationsMonthlyValueAsync(DateTime date, int incrementBy)
     {
-        return null;
+        var monthString = date.ToString("yyyy-MM");
+        var filter = Builders<Registrations>.Filter.Eq(r => r.Date, monthString);
+        var update = Builders<Registrations>.Update
+            .SetOnInsert(r => r.Date, monthString)
+            .Inc(r => r.RegistrationsCount, incrementBy);
+        var options = new FindOneAndUpdateOptions<Registrations>
+        {
+            IsUpsert = true,
+            ReturnDocument = ReturnDocument.After
+        };
+        try
+        {
+            var updatedRegistration = await _registrationsMonthlyCollection
+                .FindOneAndUpdateAsync(filter, update, options);
+            return updatedRegistration;
+        }
+        catch (MongoException ex)
+        {
+            throw new Exception("An error occurred while incrementing monthly registrations.", ex);
+        }
     }
 
     public async Task<Registrations?> IncrementRegistrationsYearlyValueAsync(DateTime date, int incrementBy)
     {
-        return null;
+        var yearString = date.ToString("yyyy");
+        var filter = Builders<Registrations>.Filter.Eq(r => r.Date, yearString);
+        var update = Builders<Registrations>.Update
+            .SetOnInsert(r => r.Date, yearString)
+            .Inc(r => r.RegistrationsCount, incrementBy);
+        var options = new FindOneAndUpdateOptions<Registrations>
+        {
+            IsUpsert = true,
+            ReturnDocument = ReturnDocument.After
+        };
+        try
+        {
+            var updatedRegistration = await _registrationsYearlyCollection
+                .FindOneAndUpdateAsync(filter, update, options);
+            return updatedRegistration;
+        }
+        catch (MongoException ex)
+        {
+            throw new Exception("An error occurred while incrementing yearly registrations.", ex);
+        }
     }
 }
