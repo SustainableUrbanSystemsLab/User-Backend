@@ -22,6 +22,13 @@ namespace Urbano_API.Models
 		public string LoginsMonthlyCollectionName { get; set; } = null!;
 
 		public string LoginsYearlyCollectionName { get; set; } = null!;
+		
+		public string UniqueLoginsYearlyCollectionName { get; set; } = null!;
+		public string UniqueLoginsDailyCollectionName { get; set; } = null!;
+
+		public string UniqueLoginsWeeklyCollectionName { get; set; } = null!;
+
+		public string UniqueLoginsMonthlyCollectionName { get; set; } = null!;
 	}
 }
 
