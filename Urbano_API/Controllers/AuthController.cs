@@ -20,8 +20,11 @@ public class AuthController : ControllerBase
     private readonly IVerificationRepository _verificationRepository;
     private readonly IMetricsRepository _metricsRepository;
      private readonly IWalletRepository _walletRepository;
+    private readonly ILoginsRepository _loginsRepository;
 
-    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IWalletRepository walletRepository)
+    private readonly IUniqueLoginsRepository _uniqueLoginsRepository;
+
+    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IWalletRepository walletRepository, ILoginsRepository loginsRepository, IUniqueLoginsRepository uniqueLoginsRepository)
     {
         this.configuration = configuration;
         _authService = authService;
@@ -30,12 +33,16 @@ public class AuthController : ControllerBase
         _verificationRepository = verificationRepository;
         _metricsRepository = metricsRepository;
         _walletRepository = walletRepository;
+        _loginsRepository = loginsRepository;
+        _uniqueLoginsRepository = uniqueLoginsRepository;
     }
 
     [HttpPost("/login")]
     public async Task<IActionResult> Login([FromBody] LoginDTO credential)
     {
         var resp = await _userRepository.GetUserAsync(credential.UserName);
+
+        var pastLoginDate = resp.LastLoginDate;
 
         if (resp is null)
         {
@@ -48,6 +55,8 @@ public class AuthController : ControllerBase
         // Verify the credential
         if (resp.Verified == true && resp.UserName == credential.UserName && CryptographicOperations.FixedTimeEquals(Convert.FromHexString(_authService.GeneratePasswordHash(credential.Password)), Convert.FromHexString(resp.Password)))
         {
+            //Update User Login Date
+            await _userRepository.UpdateLastLoginDateAsync(resp.Id, DateTime.UtcNow);
             // Creating the security context
             var claims = new List<Claim> {
                     new Claim(ClaimTypes.Email, credential.UserName),
@@ -59,6 +68,62 @@ public class AuthController : ControllerBase
             if (updatedMetric == null)
             {
                 // TODO: Handle missing metric initialization.
+            }
+            // Update Successful Logins Counter Daily
+            var updatedLoginDaily = await _loginsRepository.IncrementLoginsDailyValueAsync(DateTime.UtcNow, 1);
+            if (updatedLoginDaily == null)
+            {
+                // TODO: Handle missing login. daily counter.
+            }
+            // Update Successful. Unique Logins Counter Daily
+            var updatedUniqueLoginDaily = await _uniqueLoginsRepository.IncrementUniqueLoginsDailyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
+            if (updatedUniqueLoginDaily == null)
+            {
+                // TODO: Handle missing login. daily counter.
+                // Will indicate that User already logged in on this day
+            }
+
+            // Update Successful Logins Counter Weekly
+            var updatedLoginWeekly = await _loginsRepository.IncrementLoginsWeeklyValueAsync(DateTime.UtcNow, 1);
+            if (updatedLoginWeekly == null)
+            {
+                // TODO: Handle missing login. Weekly counter.
+            }
+            // Update Successful. Unique Logins Counter Weekly
+            var updatedUniqueLoginWeekly = await _uniqueLoginsRepository.IncrementUniqueLoginsWeeklyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
+            if (updatedUniqueLoginWeekly == null)
+            {
+                // TODO: Handle missing login. weekly counter.
+                // Will indicate that User already logged in on this week
+            }
+
+            // Update Successful Logins Counter Monthly
+            var updatedLoginMonthly = await _loginsRepository.IncrementLoginsMonthlyValueAsync(DateTime.UtcNow, 1);
+            if (updatedLoginMonthly == null)
+            {
+                // TODO: Handle missing login. Monthly counter.
+            }
+
+            // Update Successful. Unique Logins Counter Monthly
+            var updatedUniqueLoginMonthly = await _uniqueLoginsRepository.IncrementUniqueLoginsMonthlyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
+            if (updatedUniqueLoginMonthly == null)
+            {
+                // TODO: Handle missing login. monthly counter.
+                // Will indicate that User already logged in on this month
+            }
+
+            // Update Successful Logins Counter Yearly
+            var updatedLoginYearly = await _loginsRepository.IncrementLoginsYearlyValueAsync(DateTime.UtcNow, 1);
+            if (updatedLoginYearly == null)
+            {
+                // TODO: Handle missing login. Yearly counter.
+            }
+            // Update Successful. Unique Logins Counter Yearly
+            var updatedUniqueLoginYearly = await _uniqueLoginsRepository.IncrementUniqueLoginsYearlyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
+            if (updatedUniqueLoginYearly == null)
+            {
+                // TODO: Handle missing login. yearly counter.
+                // Will indicate that User already logged in on this year
             }
 
             return Ok(new
