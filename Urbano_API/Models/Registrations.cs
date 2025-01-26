@@ -12,7 +12,7 @@ public class Registrations
     [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
     public DateTime Date { get; set; } = DateTime.Today;
 
-    public int Registrations { get; set; } = 0;
+    public int RegistrationsCount { get; set; } = 0;
 
     public Registrations()
     {

@@ -36,8 +36,68 @@ public class RegistrationsRepository: IRegistrationsRepository
         var filter = Builders<Registrations>.Filter.Eq(r => r.Date, dateOnly);
         var update = Builders<Registrations>.Update
             .SetOnInsert(r => r.Date, dateOnly)
-            .SetOnInsert(r => r.Registrations, 0)
-            .Inc(r => r.Registrations, incrementBy);
+            .SetOnInsert(r => r.RegistrationsCount, 0)
+            .Inc(r => r.RegistrationsCount, incrementBy);
+        var options = new FindOneAndUpdateOptions<Registrations>
+        {
+            IsUpsert = true,
+            ReturnDocument = ReturnDocument.After
+        };
+
+        var updatedRegistration = await _registrationsDailyCollection
+            .FindOneAndUpdateAsync(filter, update, options);
+
+        return updatedRegistration;
+    }
+
+    public async Task<Registrations?> IncrementRegistrationsWeeklyValueAsync(DateTime date, int incrementBy)
+    {
+        var dateOnly = date.Date;
+        var filter = Builders<Registrations>.Filter.Eq(r => r.Date, dateOnly);
+        var update = Builders<Registrations>.Update
+            .SetOnInsert(r => r.Date, dateOnly)
+            .SetOnInsert(r => r.RegistrationsCount, 0)
+            .Inc(r => r.RegistrationsCount, incrementBy);
+        var options = new FindOneAndUpdateOptions<Registrations>
+        {
+            IsUpsert = true,
+            ReturnDocument = ReturnDocument.After
+        };
+
+        var updatedRegistration = await _registrationsDailyCollection
+            .FindOneAndUpdateAsync(filter, update, options);
+
+        return updatedRegistration;
+    }
+
+    public async Task<Registrations?> IncrementRegistrationsMonthlyValueAsync(DateTime date, int incrementBy)
+    {
+        var dateOnly = date.Date;
+        var filter = Builders<Registrations>.Filter.Eq(r => r.Date, dateOnly);
+        var update = Builders<Registrations>.Update
+            .SetOnInsert(r => r.Date, dateOnly)
+            .SetOnInsert(r => r.RegistrationsCount, 0)
+            .Inc(r => r.RegistrationsCount, incrementBy);
+        var options = new FindOneAndUpdateOptions<Registrations>
+        {
+            IsUpsert = true,
+            ReturnDocument = ReturnDocument.After
+        };
+
+        var updatedRegistration = await _registrationsDailyCollection
+            .FindOneAndUpdateAsync(filter, update, options);
+
+        return updatedRegistration;
+    }
+
+    public async Task<Registrations?> IncrementRegistrationsYearlyValueAsync(DateTime date, int incrementBy)
+    {
+        var dateOnly = date.Date;
+        var filter = Builders<Registrations>.Filter.Eq(r => r.Date, dateOnly);
+        var update = Builders<Registrations>.Update
+            .SetOnInsert(r => r.Date, dateOnly)
+            .SetOnInsert(r => r.RegistrationsCount, 0)
+            .Inc(r => r.RegistrationsCount, incrementBy);
         var options = new FindOneAndUpdateOptions<Registrations>
         {
             IsUpsert = true,

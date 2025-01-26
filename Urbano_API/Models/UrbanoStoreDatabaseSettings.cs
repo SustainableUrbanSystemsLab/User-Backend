@@ -14,6 +14,12 @@ namespace Urbano_API.Models
 		public string MetricsCollectionName { get; set; } = null!;
 
 		public string RegistrationsDailyCollectionName { get; set; } = null!;
+
+		public string RegistrationsWeeklyCollectionName { get; set; } = null!;
+
+		public string RegistrationsMonthlyCollectionName { get; set; } = null!;
+
+		public string RegistrationsYearlyCollectionName { get; set; } = null!;
 	}
 }
 
