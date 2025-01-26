@@ -22,9 +22,7 @@ public class AuthController : ControllerBase
      private readonly IWalletRepository _walletRepository;
     private readonly ILoginsRepository _loginsRepository;
 
-    private readonly IUniqueLoginsRepository _uniqueLoginsRepository;
-
-    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IWalletRepository walletRepository, ILoginsRepository loginsRepository, IUniqueLoginsRepository uniqueLoginsRepository)
+    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IWalletRepository walletRepository, ILoginsRepository loginsRepository)
     {
         this.configuration = configuration;
         _authService = authService;
@@ -34,7 +32,6 @@ public class AuthController : ControllerBase
         _metricsRepository = metricsRepository;
         _walletRepository = walletRepository;
         _loginsRepository = loginsRepository;
-        _uniqueLoginsRepository = uniqueLoginsRepository;
     }
 
     [HttpPost("/login")]
@@ -76,7 +73,7 @@ public class AuthController : ControllerBase
                 // TODO: Handle missing login. daily counter.
             }
             // Update Successful. Unique Logins Counter Daily
-            var updatedUniqueLoginDaily = await _uniqueLoginsRepository.IncrementUniqueLoginsDailyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
+            var updatedUniqueLoginDaily = await _loginsRepository.IncrementUniqueLoginsDailyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
             if (updatedUniqueLoginDaily == null)
             {
                 // TODO: Handle missing login. daily counter.
@@ -90,7 +87,7 @@ public class AuthController : ControllerBase
                 // TODO: Handle missing login. Weekly counter.
             }
             // Update Successful. Unique Logins Counter Weekly
-            var updatedUniqueLoginWeekly = await _uniqueLoginsRepository.IncrementUniqueLoginsWeeklyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
+            var updatedUniqueLoginWeekly = await _loginsRepository.IncrementUniqueLoginsWeeklyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
             if (updatedUniqueLoginWeekly == null)
             {
                 // TODO: Handle missing login. weekly counter.
@@ -105,7 +102,7 @@ public class AuthController : ControllerBase
             }
 
             // Update Successful. Unique Logins Counter Monthly
-            var updatedUniqueLoginMonthly = await _uniqueLoginsRepository.IncrementUniqueLoginsMonthlyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
+            var updatedUniqueLoginMonthly = await _loginsRepository.IncrementUniqueLoginsMonthlyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
             if (updatedUniqueLoginMonthly == null)
             {
                 // TODO: Handle missing login. monthly counter.
@@ -119,7 +116,7 @@ public class AuthController : ControllerBase
                 // TODO: Handle missing login. Yearly counter.
             }
             // Update Successful. Unique Logins Counter Yearly
-            var updatedUniqueLoginYearly = await _uniqueLoginsRepository.IncrementUniqueLoginsYearlyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
+            var updatedUniqueLoginYearly = await _loginsRepository.IncrementUniqueLoginsYearlyValueAsync(DateTime.UtcNow, pastLoginDate,  1);
             if (updatedUniqueLoginYearly == null)
             {
                 // TODO: Handle missing login. yearly counter.
