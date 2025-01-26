@@ -32,11 +32,10 @@ public class RegistrationsRepository: IRegistrationsRepository
 
     public async Task<Registrations?> IncrementRegistrationsDailyValueAsync(DateTime date, int incrementBy)
     {
-        var dateOnly = date.Date;
+        var dateOnly = date.ToString("yyyy-MM-dd");
         var filter = Builders<Registrations>.Filter.Eq(r => r.Date, dateOnly);
         var update = Builders<Registrations>.Update
             .SetOnInsert(r => r.Date, dateOnly)
-            .SetOnInsert(r => r.RegistrationsCount, 0)
             .Inc(r => r.RegistrationsCount, incrementBy);
         var options = new FindOneAndUpdateOptions<Registrations>
         {
@@ -44,69 +43,32 @@ public class RegistrationsRepository: IRegistrationsRepository
             ReturnDocument = ReturnDocument.After
         };
 
-        var updatedRegistration = await _registrationsDailyCollection
-            .FindOneAndUpdateAsync(filter, update, options);
+        try
+        {
+            var updatedRegistration = await _registrationsDailyCollection
+                .FindOneAndUpdateAsync(filter, update, options);
 
-        return updatedRegistration;
+            return updatedRegistration;
+        }
+        catch (MongoException ex)
+        {
+            throw new Exception("An error occurred while incrementing daily registrations.", ex);
+        }
     }
 
     public async Task<Registrations?> IncrementRegistrationsWeeklyValueAsync(DateTime date, int incrementBy)
     {
-        var dateOnly = date.Date;
-        var filter = Builders<Registrations>.Filter.Eq(r => r.Date, dateOnly);
-        var update = Builders<Registrations>.Update
-            .SetOnInsert(r => r.Date, dateOnly)
-            .SetOnInsert(r => r.RegistrationsCount, 0)
-            .Inc(r => r.RegistrationsCount, incrementBy);
-        var options = new FindOneAndUpdateOptions<Registrations>
-        {
-            IsUpsert = true,
-            ReturnDocument = ReturnDocument.After
-        };
-
-        var updatedRegistration = await _registrationsDailyCollection
-            .FindOneAndUpdateAsync(filter, update, options);
-
-        return updatedRegistration;
+        
+        return null;
     }
 
     public async Task<Registrations?> IncrementRegistrationsMonthlyValueAsync(DateTime date, int incrementBy)
     {
-        var dateOnly = date.Date;
-        var filter = Builders<Registrations>.Filter.Eq(r => r.Date, dateOnly);
-        var update = Builders<Registrations>.Update
-            .SetOnInsert(r => r.Date, dateOnly)
-            .SetOnInsert(r => r.RegistrationsCount, 0)
-            .Inc(r => r.RegistrationsCount, incrementBy);
-        var options = new FindOneAndUpdateOptions<Registrations>
-        {
-            IsUpsert = true,
-            ReturnDocument = ReturnDocument.After
-        };
-
-        var updatedRegistration = await _registrationsDailyCollection
-            .FindOneAndUpdateAsync(filter, update, options);
-
-        return updatedRegistration;
+        return null;
     }
 
     public async Task<Registrations?> IncrementRegistrationsYearlyValueAsync(DateTime date, int incrementBy)
     {
-        var dateOnly = date.Date;
-        var filter = Builders<Registrations>.Filter.Eq(r => r.Date, dateOnly);
-        var update = Builders<Registrations>.Update
-            .SetOnInsert(r => r.Date, dateOnly)
-            .SetOnInsert(r => r.RegistrationsCount, 0)
-            .Inc(r => r.RegistrationsCount, incrementBy);
-        var options = new FindOneAndUpdateOptions<Registrations>
-        {
-            IsUpsert = true,
-            ReturnDocument = ReturnDocument.After
-        };
-
-        var updatedRegistration = await _registrationsDailyCollection
-            .FindOneAndUpdateAsync(filter, update, options);
-
-        return updatedRegistration;
+        return null;
     }
 }

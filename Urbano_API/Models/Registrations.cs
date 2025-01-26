@@ -9,8 +9,8 @@ public class Registrations
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
 
-    [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
-    public DateTime Date { get; set; } = DateTime.Today;
+    [BsonElement("Date")]
+    public string Date { get; set; } = string.Empty;
 
     public int RegistrationsCount { get; set; } = 0;
 
