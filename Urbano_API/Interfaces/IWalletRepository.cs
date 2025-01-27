@@ -17,3 +17,4 @@ public interface IWalletRepository
     public Task RemoveAsync(string id);
 
 }
+

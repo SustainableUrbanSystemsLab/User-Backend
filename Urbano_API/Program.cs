@@ -32,6 +32,8 @@ builder.Services.AddSingleton<IVerificationRepository, VerificationRepository>()
 builder.Services.AddSingleton<IMetricsRepository, MetricsRepository>();
 builder.Services.AddSingleton<IRegistrationsRepository, RegistrationsRepository>();
 builder.Services.AddSingleton<ISimulationsRepository, SimulationsRepository>();
+builder.Services.AddSingleton<IWalletRepository, WalletRepository>();
+builder.Services.AddSingleton<ILoginsRepository, LoginsRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
