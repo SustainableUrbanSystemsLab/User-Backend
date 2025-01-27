@@ -30,12 +30,13 @@ public class SimulationsRepository: ISimulationsRepository
             urbanoStoreDatabaseSettings.Value.SimulationsYearlyCollectionName);
     }
 
-    public async Task<Simulations?> IncrementSimulationsDailyValueAsync(DateTime date, int incrementBy)
+    public async Task<Simulations?> IncrementSimulationsDailyValueAsync(DateTime date, int incrementBy, string type)
     {
         var dateOnly = date.ToString("yyyy-MM-dd");
-        var filter = Builders<Simulations>.Filter.Eq(r => r.Date, dateOnly);
+        var filter = Builders<Simulations>.Filter.And(Builders<Simulations>.Filter.Eq(r => r.Date, dateOnly), Builders<Simulations>.Filter.Eq(r => r.SimulationType, type.Substring(0, type.IndexOf("Token"))));
         var update = Builders<Simulations>.Update
             .SetOnInsert(r => r.Date, dateOnly)
+            .SetOnInsert(r => r.SimulationType, type.Substring(0, type.IndexOf("Token")))
             .Inc(r => r.SimulationsCount, incrementBy);
         var options = new FindOneAndUpdateOptions<Simulations>
         {
@@ -54,7 +55,7 @@ public class SimulationsRepository: ISimulationsRepository
         }
     }
 
-    public async Task<Simulations?> IncrementSimulationsWeeklyValueAsync(DateTime date, int incrementBy)
+    public async Task<Simulations?> IncrementSimulationsWeeklyValueAsync(DateTime date, int incrementBy, string type)
     {
         
         DateTime GetMonday(DateTime inputDate)
@@ -72,9 +73,10 @@ public class SimulationsRepository: ISimulationsRepository
         var startOfWeek = GetMonday(date);  // uses the helper from above
 
         var weekString = startOfWeek.ToString("yyyy-MM-dd");
-        var filter = Builders<Simulations>.Filter.Eq(r => r.Date, weekString);
+        var filter = Builders<Simulations>.Filter.And(Builders<Simulations>.Filter.Eq(r => r.Date, weekString), Builders<Simulations>.Filter.Eq(r => r.SimulationType, type.Substring(0, type.IndexOf("Token"))));
         var update = Builders<Simulations>.Update
             .SetOnInsert(r => r.Date, weekString)
+            .SetOnInsert(r => r.SimulationType, type.Substring(0, type.IndexOf("Token")))
             .Inc(r => r.SimulationsCount, incrementBy);
         var options = new FindOneAndUpdateOptions<Simulations>
         {
@@ -93,12 +95,13 @@ public class SimulationsRepository: ISimulationsRepository
         }
     }
 
-    public async Task<Simulations?> IncrementSimulationsMonthlyValueAsync(DateTime date, int incrementBy)
+    public async Task<Simulations?> IncrementSimulationsMonthlyValueAsync(DateTime date, int incrementBy, string type)
     {
         var monthString = date.ToString("yyyy-MM");
-        var filter = Builders<Simulations>.Filter.Eq(r => r.Date, monthString);
+        var filter = Builders<Simulations>.Filter.And(Builders<Simulations>.Filter.Eq(r => r.Date, monthString), Builders<Simulations>.Filter.Eq(r => r.SimulationType, type.Substring(0, type.IndexOf("Token"))));
         var update = Builders<Simulations>.Update
             .SetOnInsert(r => r.Date, monthString)
+            .SetOnInsert(r => r.SimulationType, type.Substring(0, type.IndexOf("Token")))
             .Inc(r => r.SimulationsCount, incrementBy);
         var options = new FindOneAndUpdateOptions<Simulations>
         {
@@ -117,12 +120,13 @@ public class SimulationsRepository: ISimulationsRepository
         }
     }
 
-    public async Task<Simulations?> IncrementSimulationsYearlyValueAsync(DateTime date, int incrementBy)
+    public async Task<Simulations?> IncrementSimulationsYearlyValueAsync(DateTime date, int incrementBy, string type)
     {
         var yearString = date.ToString("yyyy");
-        var filter = Builders<Simulations>.Filter.Eq(r => r.Date, yearString);
+        var filter = Builders<Simulations>.Filter.And(Builders<Simulations>.Filter.Eq(r => r.Date, yearString), Builders<Simulations>.Filter.Eq(r => r.SimulationType, type.Substring(0, type.IndexOf("Token"))));
         var update = Builders<Simulations>.Update
             .SetOnInsert(r => r.Date, yearString)
+            .SetOnInsert(r => r.SimulationType, type.Substring(0, type.IndexOf("Token")))
             .Inc(r => r.SimulationsCount, incrementBy);
         var options = new FindOneAndUpdateOptions<Simulations>
         {

@@ -231,21 +231,14 @@ public class AuthController : ControllerBase
     [HttpPost("/simulate")]
     public async Task<IActionResult> Simulate([FromBody] SimulationsDTO simulationDTO)
     {
-        if (simulationDTO == null || simulationDTO.UserName == null || string.IsNullOrEmpty(simulationDTO.SimulationType))
+        if (simulationDTO == null || simulationDTO.UserId == null || string.IsNullOrEmpty(simulationDTO.TokenType))
         {
             return BadRequest("Invalid simulation request.");
         }
-        var username = simulationDTO.UserName;
-        var simulationType = simulationDTO.SimulationType;
-        var user = await _userRepository.GetUserAsync(username);
-        if (user == null)
-        {
-            ModelState.AddModelError("Unauthorized", "User not found.");
-            return Unauthorized(ModelState);
-        }
+        var tokenType = simulationDTO.TokenType;
 
         // Retrieve the wallet
-        var wallet = await _walletRepository.GetWalletByUserIdAsync(user.Id);
+        var wallet = await _walletRepository.GetWalletByUserIdAsync(simulationDTO.UserId);
         if (wallet == null)
         {
             return BadRequest("Wallet not found for the user.");
@@ -253,19 +246,22 @@ public class AuthController : ControllerBase
 
         // Check if the wallet has the simulation token
         QuotaToken? token = wallet.QuotaTokens
-                .Where(qt => qt.Type.Equals(simulationType, StringComparison.OrdinalIgnoreCase) && qt.Quantity >= 1)
+                .Where(qt => qt.Type.Equals(tokenType, StringComparison.OrdinalIgnoreCase) && qt.Quantity >= 1)
                 .SingleOrDefault();
         if (token == null)
         {
-            return BadRequest($"Insufficient '{simulationType}' tokens in the wallet.");
+            return BadRequest($"Insufficient '{tokenType}' tokens in the wallet.");
         }
 
         // Success
-        token.Quantity -= 1;
-        var daily = await _simulationsRepository.IncrementSimulationsDailyValueAsync(DateTime.UtcNow, 1);
-        var weekly = await _simulationsRepository.IncrementSimulationsWeeklyValueAsync(DateTime.UtcNow, 1);
-        var monthly = await _simulationsRepository.IncrementSimulationsMonthlyValueAsync(DateTime.UtcNow, 1);
-        var yearly = await _simulationsRepository.IncrementSimulationsYearlyValueAsync(DateTime.UtcNow, 1);
+        /********************************************************************************************
+        // TODO: below line doesn't actually work
+        // token.Quantity -= 1;
+        **/
+        var daily = await _simulationsRepository.IncrementSimulationsDailyValueAsync(DateTime.UtcNow, 1, tokenType);
+        var weekly = await _simulationsRepository.IncrementSimulationsWeeklyValueAsync(DateTime.UtcNow, 1, tokenType);
+        var monthly = await _simulationsRepository.IncrementSimulationsMonthlyValueAsync(DateTime.UtcNow, 1, tokenType);
+        var yearly = await _simulationsRepository.IncrementSimulationsYearlyValueAsync(DateTime.UtcNow, 1, tokenType);
 
         return Ok("Simulation successfully executed.");
     }
