@@ -20,6 +20,13 @@ namespace Urbano_API.Models
 		public string RegistrationsMonthlyCollectionName { get; set; } = null!;
 
 		public string RegistrationsYearlyCollectionName { get; set; } = null!;
+		public string SimulationsDailyCollectionName { get; set; } = null!;
+
+		public string SimulationsWeeklyCollectionName { get; set; } = null!;
+
+		public string SimulationsMonthlyCollectionName { get; set; } = null!;
+
+		public string SimulationsYearlyCollectionName { get; set; } = null!;
 	}
 }
 

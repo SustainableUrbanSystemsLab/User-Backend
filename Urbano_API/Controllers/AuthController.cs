@@ -21,8 +21,10 @@ public class AuthController : ControllerBase
     private readonly IVerificationRepository _verificationRepository;
     private readonly IMetricsRepository _metricsRepository;
     private readonly IRegistrationsRepository _registrationsRepository;
+    private readonly IWalletRepository _walletRepository;
+    private readonly ISimulationsRepository _simulationsRepository;
 
-    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IRegistrationsRepository registrationsRepository)
+    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IRegistrationsRepository registrationsRepository, IWalletRepository walletRepository, ISimulationsRepository simulationsRepository)
     {
         this.configuration = configuration;
         _authService = authService;
@@ -31,6 +33,8 @@ public class AuthController : ControllerBase
         _verificationRepository = verificationRepository;
         _metricsRepository = metricsRepository;
         _registrationsRepository = registrationsRepository;
+        _walletRepository = walletRepository;
+        _simulationsRepository = simulationsRepository;
     }
 
     [HttpPost("/login")]
@@ -90,12 +94,26 @@ public class AuthController : ControllerBase
             //_verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
 
             // Update all temporal registrations counters
-            var updatedRegistration = await _registrationsRepository.IncrementRegistrationsDailyValueAsync(DateTime.UtcNow, 1);
-            if (updatedRegistration == null)
+            var updatedRegistrationDaily = await _registrationsRepository.IncrementRegistrationsDailyValueAsync(DateTime.UtcNow, 1);
+            if (updatedRegistrationDaily == null)
             {
                 // TODO: Handle missing registration initialization.
             }
-            // TODO: Also handle weekly, monthly, yearly when implemented
+            var updatedRegistrationWeekly = await _registrationsRepository.IncrementRegistrationsWeeklyValueAsync(DateTime.UtcNow, 1);
+            if (updatedRegistrationWeekly == null)
+            {
+                // TODO: Handle missing registration initialization.
+            }
+            var updatedRegistrationMonthly = await _registrationsRepository.IncrementRegistrationsMonthlyValueAsync(DateTime.UtcNow, 1);
+            if (updatedRegistrationMonthly == null)
+            {
+                // TODO: Handle missing registration initialization.
+            }
+            var updatedRegistrationYearly = await _registrationsRepository.IncrementRegistrationsYearlyValueAsync(DateTime.UtcNow, 1);
+            if (updatedRegistrationYearly == null)
+            {
+                // TODO: Handle missing registration initialization.
+            }
 
             return Ok("User Succesfully created");
         }
@@ -107,12 +125,27 @@ public class AuthController : ControllerBase
             await _userRepository.UpdateAsync(resp.Id, resp);
             //_verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
 
-            var updatedRegistration = await _registrationsRepository.IncrementRegistrationsDailyValueAsync(DateTime.UtcNow, 1);
-            if (updatedRegistration == null)
+            // Update all temporal registrations counters
+            var updatedRegistrationDaily = await _registrationsRepository.IncrementRegistrationsDailyValueAsync(DateTime.UtcNow, 1);
+            if (updatedRegistrationDaily == null)
             {
                 // TODO: Handle missing registration initialization.
             }
-            // TODO: Also handle weekly, monthly, yearly when implemented
+            var updatedRegistrationWeekly = await _registrationsRepository.IncrementRegistrationsWeeklyValueAsync(DateTime.UtcNow, 1);
+            if (updatedRegistrationWeekly == null)
+            {
+                // TODO: Handle missing registration initialization.
+            }
+            var updatedRegistrationMonthly = await _registrationsRepository.IncrementRegistrationsMonthlyValueAsync(DateTime.UtcNow, 1);
+            if (updatedRegistrationMonthly == null)
+            {
+                // TODO: Handle missing registration initialization.
+            }
+            var updatedRegistrationYearly = await _registrationsRepository.IncrementRegistrationsYearlyValueAsync(DateTime.UtcNow, 1);
+            if (updatedRegistrationYearly == null)
+            {
+                // TODO: Handle missing registration initialization.
+            }
 
             return Ok("User Succesfully created");
         }
@@ -120,17 +153,45 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("/simulate")]
-    public async Task<IActionResult> Simulate([FromBody] UserDTO userDTO, [FromBody] string token)
+    public async Task<IActionResult> Simulate([FromBody] SimulationsDTO simulationDTO)
     {
-        User user = userDTO.GetUser();
-        if (!_authService.IsValidUserName(user.UserName))
+        if (simulationDTO == null || simulationDTO.UserName == null || string.IsNullOrEmpty(simulationDTO.SimulationType))
         {
-            return BadRequest("Incorrect mail Id");
+            return BadRequest("Invalid simulation request.");
         }
-        var resp = await _userRepository.GetUserAsync(user.UserName);
+        var username = simulationDTO.UserName;
+        var simulationType = simulationDTO.SimulationType;
+        var user = await _userRepository.GetUserAsync(username);
+        if (user == null)
+        {
+            ModelState.AddModelError("Unauthorized", "User not found.");
+            return Unauthorized(ModelState);
+        }
 
-        //todo
-        return BadRequest("User already exists");
+        // Retrieve the wallet
+        var wallet = await _walletRepository.GetWalletByUserIdAsync(user.Id);
+        if (wallet == null)
+        {
+            return BadRequest("Wallet not found for the user.");
+        }
+
+        // Check if the wallet has the simulation token
+        QuotaToken? token = wallet.QuotaTokens
+                .Where(qt => qt.Type.Equals(simulationType, StringComparison.OrdinalIgnoreCase) && qt.Quantity >= 1)
+                .SingleOrDefault();
+        if (token == null)
+        {
+            return BadRequest($"Insufficient '{simulationType}' tokens in the wallet.");
+        }
+
+        // Success
+        token.Quantity -= 1;
+        var daily = await _simulationsRepository.IncrementSimulationsDailyValueAsync(DateTime.UtcNow, 1);
+        var weekly = await _simulationsRepository.IncrementSimulationsWeeklyValueAsync(DateTime.UtcNow, 1);
+        var monthly = await _simulationsRepository.IncrementSimulationsMonthlyValueAsync(DateTime.UtcNow, 1);
+        var yearly = await _simulationsRepository.IncrementSimulationsYearlyValueAsync(DateTime.UtcNow, 1);
+
+        return Ok("Simulation successfully executed.");
     }
 
     [HttpPost("/otp/generate")]
