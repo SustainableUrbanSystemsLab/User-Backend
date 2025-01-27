@@ -12,6 +12,8 @@ public class Simulations
     [BsonElement("Date")]
     public string Date { get; set; } = string.Empty;
 
+    public string SimulationType { get; set; } = string.Empty;
+
     public int SimulationsCount { get; set; } = 0;
 
     public Simulations()

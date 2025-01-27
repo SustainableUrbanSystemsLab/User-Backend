@@ -1,9 +1,13 @@
 ﻿namespace Urbano_API.DTOs;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
+
 
 public class SimulationsDTO
 {
-    public string UserName { get; set; } = string.Empty;
-    public string SimulationType { get; set; } = string.Empty;
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? UserId { get; set; }
+    public string TokenType { get; set; } = string.Empty;
 }
 
 
