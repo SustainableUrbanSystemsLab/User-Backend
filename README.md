@@ -10,26 +10,6 @@ Eddy3D is an autoCAD extension designed to provide advanced simulations and visu
 
 # Release Notes
 
-## Version 0.0.0
-
-### Features
-- **Basic User Data**:  
-  - User registration and login
-  - User verification dissabled
-
-- **Basic Metrics**:  
-  - A basic foundation for user metrics
-  - Tracks successfull logins
-  - Auto-initialization check of metrics model
-
-### Bug Fixes
-- This is the initial build
-
-### Known Issues
-- No error handeling for metrics api calls
-- Strange delay/issue with daily login incrementing sometimes
-- HTTPS resolve warnings
-
 ## Version 0.1.0
 
 ### Features
@@ -78,6 +58,26 @@ Eddy3D is an autoCAD extension designed to provide advanced simulations and visu
 ### Known Issues
 - Login date stored when a user registers causes registered user to be counted as a unique login user
 
+## Version 0.0.0
+
+### Features
+- **Basic User Data**:  
+  - User registration and login
+  - User verification dissabled
+
+- **Basic Metrics**:  
+  - A basic foundation for user metrics
+  - Tracks successfull logins
+  - Auto-initialization check of metrics model
+
+### Bug Fixes
+- This is the initial build
+
+### Known Issues
+- No error handeling for metrics api calls
+- Strange delay/issue with daily login incrementing sometimes
+- HTTPS resolve warnings
+
 ---
 
 # Technology Stack
@@ -104,11 +104,6 @@ Eddy3D is an autoCAD extension designed to provide advanced simulations and visu
 
 ---
 
-# Rationale for Artifact Selection
-Version 0.0.0 focused on implementing the essential metrics tracking infrastructure. This decision was made to kickstart the integration of advanced user tracking into Eddy3D. Alongside this comes the re-intergration of basic user data and their functionalities for testing.
-
----
-
 ## Sendgrid API Key (account under audit)
 
 > `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`
@@ -129,5 +124,3 @@ Connection string:
 [Link](https://hoppscotch.io)
 
 ---
-Related Repos:  
-https://github.com/Urbano-io/Urbano-Frontend  
