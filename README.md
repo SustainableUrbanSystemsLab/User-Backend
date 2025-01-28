@@ -4,7 +4,9 @@
 
 ## Eddy3D Backend
 
-Eddy3D is an autoCAD extension designed to provide advanced simulations and visualization for environmental dynamics research. The goal of this project is to expand the backend, primarily adding the functionalities of (1) User Metrics, and (2) Quotas, while building upon the current user data infrastructure and enhancing the current API. 
+Eddy3D is an autoCAD extension designed to provide advanced simulations and visualization for environmental dynamics research. The goal of this project is to expand the backend, primarily adding the functionalities of (1) User Metrics, and (2) Quotas, while building upon the current user data infrastructure and enhancing the current API.
+
+[Licences under MIT ](LICENSE.md)
 
 ---
 
