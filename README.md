@@ -2,7 +2,7 @@
 
 ## JDD Branch
 
-# Eddy3D Backend
+## Eddy3D Backend
 
 Eddy3D is an autoCAD extension designed to provide advanced simulations and visualization for environmental dynamics research. The goal of this project is to expand the backend, primarily adding the functionalities of (1) User Metrics, and (2) Quotas, while building upon the current user data infrastructure and enhancing the current API. 
 
@@ -29,6 +29,54 @@ Eddy3D is an autoCAD extension designed to provide advanced simulations and visu
 - No error handeling for metrics api calls
 - Strange delay/issue with daily login incrementing sometimes
 - HTTPS resolve warnings
+
+## Version 0.1.0
+
+### Features
+- **User & Simulation Metrics**:  
+  - (Temporal) Login Metrics
+    - Day
+    - Week
+    - Month
+    - Year
+  - (Temporal) Unique Login Metrics
+    - Day
+    - Week
+    - Month
+    - Year
+  - (Temporal) Registration Metrics 
+    - Day
+    - Week
+    - Month
+    - Year
+  - (Temporal & Type-Specific) Simulation Metrics
+    - (Simulation-Type) Day
+    - (Simulation-Type) Week
+    - (Simulation-Type) Month
+    - (Simulation-Type) Year
+
+- **Simulation Quotas and Quota Tokens**:  
+  - User Quotas
+    - Validated by token wallet
+    - Transactions of tokens for simulations
+  - (Type-Specific) Quota Tokens
+    - (Simulatoin) Type
+    - (Token) Life
+  - Quota Token Wallets
+    - Per User Account
+    - Tied to user BSON id
+  - Quota Token Transactions
+    - Get Wallet Balance
+    - Add to Wallet
+    - Remove from Wallet
+    - Request Token
+    - Verify Token Response
+
+### Bug Fixes
+- None
+
+### Known Issues
+- Login date stored when a user registers causes registered user to be counted as a unique login user
 
 ---
 
