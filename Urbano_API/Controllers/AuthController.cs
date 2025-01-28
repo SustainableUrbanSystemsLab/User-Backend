@@ -258,6 +258,7 @@ public class AuthController : ControllerBase
         // TODO: below line doesn't actually work
         // token.Quantity -= 1;
         **/
+        var success = await _walletRepository.RemoveTokenAsync(simulationDTO.UserId, tokenType, 1); 
         var daily = await _simulationsRepository.IncrementSimulationsDailyValueAsync(DateTime.UtcNow, 1, tokenType);
         var weekly = await _simulationsRepository.IncrementSimulationsWeeklyValueAsync(DateTime.UtcNow, 1, tokenType);
         var monthly = await _simulationsRepository.IncrementSimulationsMonthlyValueAsync(DateTime.UtcNow, 1, tokenType);
