@@ -4,6 +4,8 @@ using System.IdentityModel.Tokens.Jwt;
 using Urbano_API.Services;
 using Urbano_API.Models;
 using Urbano_API.Repositories;
+using Urbano_API.Interfaces;
+using Urbano_API.DTOs;
 
 namespace Urbano_API.Controllers;
 
@@ -11,9 +13,9 @@ namespace Urbano_API.Controllers;
 [Route("[controller]")]
 public class AdminController: ControllerBase
 {
-    private readonly UserRepository _userRepository;
+    private readonly IUserRepository _userRepository;
 
-    public AdminController(UserRepository userRepository)
+    public AdminController(IUserRepository userRepository)
 	{
         _userRepository = userRepository;
     }
@@ -54,6 +56,33 @@ public class AdminController: ControllerBase
         await _userRepository.UpdateAsync(user.Id, user);
 
         return Ok("Succesfully updated");
+    }
+
+    [HttpGet("user/role/{username}")]
+    public async Task<IActionResult> GetUserRole(string username)
+    {
+        var user = await _userRepository.GetUserAsync(username);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+
+        return Ok(new { Role = user.Role });
+    }
+    [HttpPut("user/role")]
+    public async Task<IActionResult> SetUserRole([FromBody] UserRoleDTO userRoleDTO)
+    {
+        var user = await _userRepository.GetUserAsync(userRoleDTO.UserName);
+        if (user == null)
+        {
+            return NotFound("User not found.");
+        }
+
+        // Update the user's role
+        user.Role = userRoleDTO.Role;
+        await _userRepository.UpdateAsync(user.Id, user);
+
+        return Ok($"User {userRoleDTO.UserName} role updated to {userRoleDTO.Role}");
     }
 
 }
