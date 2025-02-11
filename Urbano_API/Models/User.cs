@@ -33,7 +33,7 @@ public class User
     [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
     public DateTime Date { get; set; } = DateTime.Today;
 
-    public DateTime LastLoginDate {get; set; } = DateTime.Today;
+    public DateTime LastLoginDate {get; set; } = DateTime.MinValue;
 
     public User()
     {
