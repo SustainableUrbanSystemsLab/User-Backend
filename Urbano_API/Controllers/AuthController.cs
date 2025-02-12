@@ -52,6 +52,12 @@ public class AuthController : ControllerBase
             return Unauthorized(ModelState);
         }
 
+        if (resp.Deactivated == true)
+        {
+            ModelState.AddModelError("Unauthorized", "Your account has been deactivated.");
+            return Unauthorized(ModelState);
+        }
+
         var expiresAt = DateTime.UtcNow.AddMonths(1);
 
         // Verify the credential

@@ -17,5 +17,9 @@ public interface IUserRepository
     public Task RemoveAsync(string id);
     
     public Task UpdateLastLoginDateAsync(string id, DateTime lastLoginDate);
+
+    public Task ReactivateUserAsync(string id);
+
+    public Task DeactivateUserAsync(string id);
 }
 

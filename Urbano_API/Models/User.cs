@@ -22,6 +22,8 @@ public class User
 
     public bool Verified { get; set; } = true;
 
+    public bool Deactivated { get; set; } = false;
+
     public int AttemptsLeft { get; set; } = 4;
 
     public int MaxAttempts { get; set; } = 4;
