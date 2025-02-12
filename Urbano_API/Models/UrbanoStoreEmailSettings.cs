@@ -11,4 +11,3 @@ namespace Urbano_API.Models
         public string FromName { get; set; } = null!;
     }
 }
-

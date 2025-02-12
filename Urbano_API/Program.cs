@@ -19,6 +19,12 @@ var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
 builder.Configuration["Mailing:SmtpUsername"] = smtpUsername;
 builder.Configuration["Mailing:SmtpPassword"] = smtpPassword;
 
+// EV Loading Warning
+if (string.IsNullOrEmpty(smtpUsername) || string.IsNullOrEmpty(smtpPassword))
+{
+    Console.WriteLine("Warning: SMTP username or password is missing. Emails may not be sent.");
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: "whitelistedURLs",

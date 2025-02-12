@@ -66,23 +66,33 @@ public class VerificationService : IVerificationService
 
     private void SendEmail(string toEmail, string toName, string subject, string htmlContent)
     {
-        using (var client = new SmtpClient(_smtpServer, _smtpPort))
+        try
         {
-            client.UseDefaultCredentials = false;
-            client.Credentials = new NetworkCredential(_smtpUsername, _smtpPassword);
-            client.EnableSsl = true; // Enable SSL/TLS
-
-            var from = new MailAddress(_fromEmail, _fromName);
-            var to = new MailAddress(toEmail, toName);
-
-            var message = new MailMessage(from, to)
+            Console.WriteLine($"Attempting to send email to {toEmail}...");
+            using (var client = new SmtpClient(_smtpServer, _smtpPort))
             {
-                Subject = subject,
-                Body = htmlContent,
-                IsBodyHtml = true
-            };
+                client.UseDefaultCredentials = false;
+                client.Credentials = new NetworkCredential(_smtpUsername, _smtpPassword);
+                client.EnableSsl = true; // Enable SSL/TLS
 
-            client.Send(message);
+                var from = new MailAddress(_fromEmail, _fromName);
+                var to = new MailAddress(toEmail, toName);
+
+                var message = new MailMessage(from, to)
+                {
+                    Subject = subject,
+                    Body = htmlContent,
+                    IsBodyHtml = true
+                };
+
+                client.Send(message);
+                Console.WriteLine($"Email sent successfully to {toEmail}.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending email to {toEmail}: {ex.Message}");
+            Console.WriteLine($"Stack Trace: {ex.StackTrace}");
         }
     }
 
