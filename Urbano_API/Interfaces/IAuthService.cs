@@ -1,4 +1,6 @@
-﻿namespace Urbano_API.Interfaces;
+﻿using Urbano_API.Models;
+
+namespace Urbano_API.Interfaces;
 
 public interface IAuthService
 {

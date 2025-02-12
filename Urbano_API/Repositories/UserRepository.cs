@@ -38,5 +38,55 @@ public class UserRepository: IUserRepository
 
     public async Task RemoveAsync(string id) =>
         await _usersCollection.DeleteOneAsync(x => x.Id == id);
+    
+    public async Task UpdateLastLoginDateAsync(string userId, DateTime lastLoginDate)
+    {
+        var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+        var update = Builders<User>.Update.Set(u => u.LastLoginDate, lastLoginDate);
+
+        try
+        {
+            await _usersCollection.UpdateOneAsync(filter, update);
+        }
+        catch (MongoCommandException ex)
+        {
+            Console.WriteLine($"MongoDB error: {ex.Message}");
+            throw;
+        }
+    }
+
+    public async Task ReactivateUserAsync(string id)
+    {
+        var filter = Builders<User>.Filter.Eq(u => u.Id, id);
+        var update = Builders<User>.Update.Set(u => u.Deactivated, false);
+        
+        try
+        {
+            await _usersCollection.UpdateOneAsync(filter, update);
+        }
+        catch (MongoCommandException ex)
+        {
+            Console.WriteLine($"MongoDB error: {ex.Message}");
+            throw;
+        }
+    }
+
+    public async Task DeactivateUserAsync(string id)
+    {
+        var filter = Builders<User>.Filter.Eq(u => u.Id, id);
+        var update = Builders<User>.Update.Set(u => u.Deactivated, true);
+        
+        try
+        {
+            await _usersCollection.UpdateOneAsync(filter, update);
+        }
+        catch (MongoCommandException ex)
+        {
+            Console.WriteLine($"MongoDB error: {ex.Message}");
+            throw;
+        }
+    }
+
+
 }
 

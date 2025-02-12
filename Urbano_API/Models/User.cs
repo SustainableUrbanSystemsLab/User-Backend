@@ -18,16 +18,24 @@ public class User
 
     public string LastName { get; set; } = null!;
 
-    public bool Verified { get; set; } = false;
+    public string Organization { get; set; } = null!;
 
-    public int attemptsLeft { get; set; } = 4;
+    public bool Verified { get; set; } = true;
 
-    public int maxAttempts { get; set; } = 4;
+    public bool Deactivated { get; set; } = false;
+
+    public int AttemptsLeft { get; set; } = 4;
+
+    public int MaxAttempts { get; set; } = 4;
+
+    public string AffiliationType { get; set; } = null!;
 
     public string Role { get; set; } = Roles.USER.ToString();
 
     [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
     public DateTime Date { get; set; } = DateTime.Today;
+
+    public DateTime LastLoginDate {get; set; } = DateTime.Today;
 
     public User()
     {
