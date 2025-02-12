@@ -5,6 +5,20 @@ using Urbano_API.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Load .env
+if (builder.Environment.IsDevelopment())
+{
+    DotNetEnv.Env.Load();
+}
+
+// Get EV vars
+var smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
+var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+
+// Replace with EV vars
+builder.Configuration["Mailing:SmtpUsername"] = smtpUsername;
+builder.Configuration["Mailing:SmtpPassword"] = smtpPassword;
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: "whitelistedURLs",
@@ -18,6 +32,7 @@ builder.Services.AddCors(options =>
                                                   .AllowAnyMethod();
                       });
 });
+
 // Add services to the container.
 builder.Services.Configure<UrbanoStoreDatabaseSettings>(
     builder.Configuration.GetSection("UrbanoDatabase"));

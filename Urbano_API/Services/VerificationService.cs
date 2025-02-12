@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Net;
+using System.Net.Mail;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SendGrid;
 using SendGrid.Helpers.Mail;
@@ -20,47 +22,68 @@ public class VerificationService : IVerificationService
 
     private readonly IConfiguration configuration;
     private readonly IVerificationRepository _verificationRepository;
-    private readonly string _apiKey;
+    private readonly string _smtpServer;
+    private readonly int _smtpPort;
+    private readonly string _smtpUsername;
+    private readonly string _smtpPassword;
     private readonly string _fromEmail;
     private readonly string _fromName;
 
     public VerificationService(IConfiguration configuration, IOptions<UrbanoStoreEmailSettings> urbanoStoreEmailSettings, IVerificationRepository verificationRepository)
     {
         this.configuration = configuration;
-        _apiKey = urbanoStoreEmailSettings.Value.APIKey;
-        _fromEmail = urbanoStoreEmailSettings.Value.SenderAddress;
-        _fromName = urbanoStoreEmailSettings.Value.SenderName;
+        _smtpServer = urbanoStoreEmailSettings.Value.SmtpServer;
+        _smtpPort = urbanoStoreEmailSettings.Value.SmtpPort;
+        _smtpUsername = urbanoStoreEmailSettings.Value.SmtpUsername;
+        _smtpPassword = urbanoStoreEmailSettings.Value.SmtpPassword;
+        _fromEmail = urbanoStoreEmailSettings.Value.FromEmail;
+        _fromName = urbanoStoreEmailSettings.Value.FromName;
         _verificationRepository = verificationRepository;
     }
 
     public void SendVerificationMail(string email, string name)
     {
-        var client = new SendGridClient(_apiKey);
-        var from = new EmailAddress(_fromEmail, _fromName);
-        var subject = "Verify your email address";
-        var to = new EmailAddress(email, name);
-        var plainTextContent = "";
         var claims = new List<Claim> {
-                new Claim(ClaimTypes.Email, email),
-            };
+            new Claim(ClaimTypes.Email, email),
+        };
+
         string url = $"{configuration.GetValue<string>("ApiURL")}/verify/{CreateToken(claims, DateTime.UtcNow.AddMinutes(10))}";
         var htmlContent = emailVerificationBody.Replace("{VerificationUrl}", url);
-        var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-        var response = client.SendEmailAsync(msg);
+
+        SendEmail(email, name, "Verify your email address", htmlContent);
     }
 
     public async void SendOTP(string email, string name)
     {
-        var client = new SendGridClient(_apiKey);
-        var from = new EmailAddress(_fromEmail, _fromName);
-        var subject = "Verify your email address";
-        var to = new EmailAddress(email, name);
-        var plainTextContent = "Password change request was recently raised on this email address:\n\n";
         var otp = (OTPGeneratorService.NextInt() % 10000).ToString("0000");
+        
         await _verificationRepository.UpsertAsync(otp, email);
+
         var htmlContent = otpVerificationBody.Replace("{UserName}", name).Replace("{OTP}", otp);
-        var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-        var response = client.SendEmailAsync(msg);
+
+        SendEmail(email, name, "Verify your email address", htmlContent);
+    }
+
+    private void SendEmail(string toEmail, string toName, string subject, string htmlContent)
+    {
+        using (var client = new SmtpClient(_smtpServer, _smtpPort))
+        {
+            client.UseDefaultCredentials = false;
+            client.Credentials = new NetworkCredential(_smtpUsername, _smtpPassword);
+            client.EnableSsl = true; // Enable SSL/TLS
+
+            var from = new MailAddress(_fromEmail, _fromName);
+            var to = new MailAddress(toEmail, toName);
+
+            var message = new MailMessage(from, to)
+            {
+                Subject = subject,
+                Body = htmlContent,
+                IsBodyHtml = true
+            };
+
+            client.Send(message);
+        }
     }
 
     public bool Verify(string token)
