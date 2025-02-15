@@ -20,7 +20,7 @@ public class User
 
     public string Organization { get; set; } = null!;
 
-    public bool Verified { get; set; } = true;
+    public bool Verified { get; set; } = false;
 
     public bool Deactivated { get; set; } = false;
 

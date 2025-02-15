@@ -155,11 +155,12 @@ public class AuthController : ControllerBase
         }
         var resp = await _userRepository.GetUserAsync(user.UserName);
 
+        // New User
         if (resp is null)
         {
             user.Password = _authService.GeneratePasswordHash(user.Password);
             await _userRepository.CreateAsync(user);
-            //_verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
+            _verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
 
             // Update all temporal registrations counters
             var updatedRegistrationDaily = await _registrationsRepository.IncrementRegistrationsDailyValueAsync(DateTime.UtcNow, 1);
@@ -199,13 +200,14 @@ public class AuthController : ControllerBase
 
             return Ok("User Succesfully created");
         }
+        // Unverified User
         else if (resp.Verified is false)
         {
             resp.FirstName = user.FirstName;
             resp.LastName = user.LastName;
             resp.Password = _authService.GeneratePasswordHash(user.Password);
             await _userRepository.UpdateAsync(resp.Id, resp);
-            //_verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
+            _verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
 
             // Update all temporal registrations counters
             var updatedRegistrationDaily = await _registrationsRepository.IncrementRegistrationsDailyValueAsync(DateTime.UtcNow, 1);
@@ -337,7 +339,7 @@ public class AuthController : ControllerBase
             if (user.Id != null)
             {
                 await _userRepository.UpdateAsync(user.Id, user);
-                string url = $"{configuration.GetValue<string>("UiURL")}/Login";
+                string url = $"{configuration.GetValue<string>("ApiURL")}/Login";   // IS POINTING TO BACKEND FOR LOCAL DEV RN!!!!!!!!!!!!!!!!
                 return Redirect(url);
             }
         }
