@@ -274,6 +274,17 @@ public class AuthController : ControllerBase
 
         return Ok("Simulation successfully executed.");
     }
+    [HttpGet("count/{userId}")]
+    public async Task<IActionResult> GetUserSimulationCount(string userId)
+    {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest("UserId is required.");
+            }
+
+            var count = await _simulationsRepository.GetUserSimulationCountAsync(userId);
+            return Ok(new { userId, totalSimulations = count });
+    }
 
     [HttpPost("/otp/generate")]
     public async Task<IActionResult> GenerateOTP([FromBody] OTPDTO emailObj)

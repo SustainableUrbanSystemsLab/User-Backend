@@ -54,6 +54,18 @@ public class SimulationsRepository: ISimulationsRepository
             throw new Exception("An error occurred while incrementing daily Simulations.", ex);
         }
     }
+    public async Task<long> GetUserSimulationCountAsync(string userId)
+    {
+        var filter = Builders<Simulations>.Filter.Eq(sim => sim.UserId, userId);
+
+        // Summing total simulations from all collections
+        var dailyCount = await _simulationsDailyCollection.CountDocumentsAsync(filter);         var weeklyCount = await _simulationsWeeklyCollection.CountDocumentsAsync(filter);
+        var monthlyCount = await _simulationsMonthlyCollection.CountDocumentsAsync(filter);
+        var yearlyCount = await _simulationsYearlyCollection.CountDocumentsAsync(filter);
+
+    return dailyCount + weeklyCount + monthlyCount + yearlyCount;
+}
+
 
     public async Task<Simulations?> IncrementSimulationsWeeklyValueAsync(DateTime date, int incrementBy, string type)
     {

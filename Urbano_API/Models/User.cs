@@ -37,7 +37,9 @@ public class User
 
     public DateTime LastLoginDate {get; set; } = DateTime.MinValue;
 
-    public User()
+    public int totalSimulationsRun { get; set; } = 0;
+
+     public User()
     {
         Id = ObjectId.GenerateNewId().ToString();
     }
