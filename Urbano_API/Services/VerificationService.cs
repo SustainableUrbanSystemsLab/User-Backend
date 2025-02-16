@@ -53,15 +53,29 @@ public class VerificationService : IVerificationService
         SendEmail(email, name, "Verify your email address", htmlContent);
     }
 
-    public async void SendOTP(string email, string name)
+    public void SendOTP(string email, string name, string purpose)
     {
+        if (string.IsNullOrEmpty(purpose))
+        {
+            throw new ArgumentException("Purpose cannot be null or empty.");
+        }
+
+        if (purpose != "password-reset" && purpose != "email-change")
+        {
+            throw new ArgumentException("Invalid purpose. Allowed values: 'password-reset', 'email-change'.");
+        }
+
         var otp = (OTPGeneratorService.NextInt() % 10000).ToString("0000");
+        var otpExpiry = DateTime.UtcNow.AddMinutes(10);
         
-        await _verificationRepository.UpsertAsync(otp, email);
+        _verificationRepository.UpsertAsync(otp, email, otpExpiry).Wait();
 
-        var htmlContent = otpVerificationBody.Replace("{UserName}", name).Replace("{OTP}", otp);
+        string subject = purpose == "email-change" ? "Verify your email change" : "Verify your password reset";
+        string body = purpose == "email-change"
+            ? $"Hello {name}, your OTP for email change is: {otp}"
+            : $"Hello {name}, your OTP for password reset is: {otp}";
 
-        SendEmail(email, name, "Verify your email address", htmlContent);
+        SendEmail(email, name, subject, body);
     }
 
     private void SendEmail(string toEmail, string toName, string subject, string htmlContent)

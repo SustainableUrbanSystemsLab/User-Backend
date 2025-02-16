@@ -14,6 +14,8 @@ public class Verification
 
     public string OTP { get; set; } = null!;
 
+    public DateTime OTPExpiry { get; set; }
+
     public Verification()
     {
         Id = ObjectId.GenerateNewId().ToString();
