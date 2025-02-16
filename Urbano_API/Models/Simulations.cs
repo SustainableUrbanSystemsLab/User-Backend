@@ -12,8 +12,13 @@ public class Simulations
     [BsonElement("Date")]
     public string Date { get; set; } = string.Empty;
 
+    [BsonElement("UserId")]
+    public string UserId { get; set; } = string.Empty;
+    
+    [BsonElement("SimulationType")]
     public string SimulationType { get; set; } = string.Empty;
-
+    
+    [BsonElement("SimulationsCount")]
     public int SimulationsCount { get; set; } = 0;
 
     public Simulations()
