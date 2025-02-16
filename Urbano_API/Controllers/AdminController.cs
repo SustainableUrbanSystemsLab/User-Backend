@@ -69,20 +69,29 @@ public class AdminController: ControllerBase
 
         return Ok(new { Role = user.Role });
     }
+    
     [HttpPut("user/role")]
-    public async Task<IActionResult> SetUserRole([FromBody] UserRoleDTO userRoleDTO)
+    public async Task<IActionResult> SetUserRole([FromBody] string userName, string token, string newRole)
     {
-        var user = await _userRepository.GetUserAsync(userRoleDTO.UserName);
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(token);
+        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+
+        if(role != Roles.ADMIN.ToString())
+        {
+            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
+            return Unauthorized(ModelState);
+        }
+
+        var user = await _userRepository.GetUserAsync(userName);
         if (user == null)
         {
-            return NotFound("User not found.");
+            return NotFound("User doesn't exist");
         }
 
         // Update the user's role
-        user.Role = userRoleDTO.Role;
         await _userRepository.UpdateAsync(user.Id, user);
-
-        return Ok($"User {userRoleDTO.UserName} role updated to {userRoleDTO.Role}");
+        return Ok("Succesfully updated");
     }
 
 }
