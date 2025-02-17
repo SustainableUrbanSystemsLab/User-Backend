@@ -1,21 +1,45 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-namespace Urbano_API.Models;
-public class Logins
+
+namespace Urbano_API.Models
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string? Id { get; set; }
-    public string DailyLoginDate { get; set; } = "";
-    public string WeeklyLoginDate { get; set; } = "";
-    public string MonthlyLoginDate { get; set; } = "";
-    public string YearlyLoginDate { get; set; } =  "";
-    public int DailyLoginCount { get; set; } = 0;
-    public int WeeklyLoginCount { get; set; } = 0;
-    public int MonthlyLoginCount { get; set; } = 0;
-    public int YearlyLoginCount { get; set; } = 0;
-    public Logins()
+    public class Logins
     {
-        Id = ObjectId.GenerateNewId().ToString();
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
+
+        [BsonElement("UserId")]
+        public string UserId { get; set; } = string.Empty;
+
+        [BsonElement("DailyLoginDate")]
+        public string DailyLoginDate { get; set; } = "";
+
+        [BsonElement("WeeklyLoginDate")]
+        public string WeeklyLoginDate { get; set; } = "";
+
+        [BsonElement("MonthlyLoginDate")]
+        public string MonthlyLoginDate { get; set; } = "";
+
+        [BsonElement("YearlyLoginDate")]
+        public string YearlyLoginDate { get; set; } = "";
+
+        [BsonElement("DailyLoginCount")]
+        public int DailyLoginCount { get; set; } = 0;
+
+        [BsonElement("WeeklyLoginCount")]
+        public int WeeklyLoginCount { get; set; } = 0;
+
+        [BsonElement("MonthlyLoginCount")]
+        public int MonthlyLoginCount { get; set; } = 0;
+
+        [BsonElement("YearlyLoginCount")]
+        public int YearlyLoginCount { get; set; } = 0;
+
+        public Logins()
+        {
+            Id = ObjectId.GenerateNewId().ToString();
+        }
     }
 }
+
