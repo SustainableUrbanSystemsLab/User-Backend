@@ -58,10 +58,10 @@ public class AdminController: ControllerBase
         return Ok("Succesfully updated");
     }
 
-    [HttpGet("user/role/{username}")]
-    public async Task<IActionResult> GetUserRole(string username)
+    [HttpGet("user/role-get")]
+    public async Task<IActionResult> GetUserRole([FromBody] string userName)
     {
-        var user = await _userRepository.GetUserAsync(username);
+        var user = await _userRepository.GetUserAsync(userName);
         if (user == null)
         {
             return NotFound("User not found");
@@ -70,7 +70,7 @@ public class AdminController: ControllerBase
         return Ok(new { Role = user.Role });
     }
 
-    [HttpPut("user/role")]
+    [HttpPut("user/role-set")]
     public async Task<IActionResult> SetUserRole([FromBody] string userName, string token, string newRole)
     {
         var handler = new JwtSecurityTokenHandler();
