@@ -69,7 +69,7 @@ public class AdminController: ControllerBase
 
         return Ok(new { Role = user.Role });
     }
-    
+
     [HttpPut("user/role")]
     public async Task<IActionResult> SetUserRole([FromBody] string userName, string token, string newRole)
     {
@@ -89,11 +89,37 @@ public class AdminController: ControllerBase
             return NotFound("User doesn't exist");
         }
 
+        user.Role = newRole;
+
         // Update the user's role
         await _userRepository.UpdateAsync(user.Id, user);
         return Ok("Succesfully updated");
     }
 
+    [HttpPut("user/deactivate")]
+    public async Task<IActionResult> DeactivateUser([FromBody] string userName, string token, bool deactivated)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(token);
+        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+
+        if(role != Roles.ADMIN.ToString())
+        {
+            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
+            return Unauthorized(ModelState);
+        }
+
+        var user = await _userRepository.GetUserAsync(userName);
+        if (user == null)
+        {
+            return NotFound("User doesn't exist");
+        }
+
+        user.Deactivated = deactivated;
+
+        // Update the user's deactivation status
+        await _userRepository.UpdateAsync(user.Id, user);
+        return Ok("Succesfully updated");
+    }
+
 }
-
-
