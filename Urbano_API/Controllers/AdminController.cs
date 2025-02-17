@@ -58,10 +58,10 @@ public class AdminController: ControllerBase
         return Ok("Succesfully updated");
     }
 
-    [HttpGet("user/role-get")]
-    public async Task<IActionResult> GetUserRole([FromBody] string userName)
+    [HttpGet("user/role-get/{username}")]
+    public async Task<IActionResult> GetUserRole(string username)
     {
-        var user = await _userRepository.GetUserAsync(userName);
+        var user = await _userRepository.GetUserAsync(username);
         if (user == null)
         {
             return NotFound("User not found");
@@ -71,10 +71,10 @@ public class AdminController: ControllerBase
     }
 
     [HttpPut("user/role-set")]
-    public async Task<IActionResult> SetUserRole([FromBody] string userName, string token, string newRole)
+    public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequest request)
     {
         var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(token);
+        var jwtSecurityToken = handler.ReadJwtToken(request.Token);
         var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
 
         if(role != Roles.ADMIN.ToString())
@@ -83,13 +83,13 @@ public class AdminController: ControllerBase
             return Unauthorized(ModelState);
         }
 
-        var user = await _userRepository.GetUserAsync(userName);
+        var user = await _userRepository.GetUserAsync(request.UserName);
         if (user == null)
         {
             return NotFound("User doesn't exist");
         }
 
-        user.Role = newRole;
+        user.Role = request.NewRole;
 
         // Update the user's role
         await _userRepository.UpdateAsync(user.Id, user);
@@ -97,10 +97,10 @@ public class AdminController: ControllerBase
     }
 
     [HttpPut("user/deactivate")]
-    public async Task<IActionResult> DeactivateUser([FromBody] string userName, string token, bool deactivated)
+    public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequest request)
     {
         var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(token);
+        var jwtSecurityToken = handler.ReadJwtToken(request.Token);
         var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
 
         if(role != Roles.ADMIN.ToString())
@@ -109,13 +109,13 @@ public class AdminController: ControllerBase
             return Unauthorized(ModelState);
         }
 
-        var user = await _userRepository.GetUserAsync(userName);
+        var user = await _userRepository.GetUserAsync(request.UserName);
         if (user == null)
         {
             return NotFound("User doesn't exist");
         }
 
-        user.Deactivated = deactivated;
+        user.Deactivated = request.Deactivated;
 
         // Update the user's deactivation status
         await _userRepository.UpdateAsync(user.Id, user);
