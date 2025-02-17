@@ -58,7 +58,7 @@ public class AdminController: ControllerBase
         return Ok("Succesfully updated");
     }
 
-    [HttpGet("user/role/{username}")]
+    [HttpGet("user/role-get/{username}")]
     public async Task<IActionResult> GetUserRole(string username)
     {
         var user = await _userRepository.GetUserAsync(username);
@@ -69,22 +69,56 @@ public class AdminController: ControllerBase
 
         return Ok(new { Role = user.Role });
     }
-    [HttpPut("user/role")]
-    public async Task<IActionResult> SetUserRole([FromBody] UserRoleDTO userRoleDTO)
+
+    [HttpPut("user/role-set")]
+    public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequest request)
     {
-        var user = await _userRepository.GetUserAsync(userRoleDTO.UserName);
-        if (user == null)
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(request.Token);
+        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+
+        if(role != Roles.ADMIN.ToString())
         {
-            return NotFound("User not found.");
+            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
+            return Unauthorized(ModelState);
         }
 
-        // Update the user's role
-        user.Role = userRoleDTO.Role;
-        await _userRepository.UpdateAsync(user.Id, user);
+        var user = await _userRepository.GetUserAsync(request.UserName);
+        if (user == null)
+        {
+            return NotFound("User doesn't exist");
+        }
 
-        return Ok($"User {userRoleDTO.UserName} role updated to {userRoleDTO.Role}");
+        user.Role = request.NewRole;
+
+        // Update the user's role
+        await _userRepository.UpdateAsync(user.Id, user);
+        return Ok("Succesfully updated");
     }
 
+    [HttpPut("user/deactivate")]
+    public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequest request)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(request.Token);
+        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+
+        if(role != Roles.ADMIN.ToString())
+        {
+            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
+            return Unauthorized(ModelState);
+        }
+
+        var user = await _userRepository.GetUserAsync(request.UserName);
+        if (user == null)
+        {
+            return NotFound("User doesn't exist");
+        }
+
+        user.Deactivated = request.Deactivated;
+
+        // Update the user's deactivation status
+        await _userRepository.UpdateAsync(user.Id, user);
+        return Ok("Succesfully updated");
+    }
 }
-
-
