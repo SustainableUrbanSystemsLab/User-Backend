@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using Urbano_API.DTOs;
 using Urbano_API.Interfaces;
 using Urbano_API.Models;
 using MongoDB.Bson;
+using Urbano_API.Repositories;
 namespace Urbano_API.Controllers
 {
     [ApiController]
@@ -12,43 +15,67 @@ namespace Urbano_API.Controllers
     public class WalletController : ControllerBase
     {
         private readonly IWalletRepository _walletRepository;
+        private readonly IUserRepository _userRepository;
 
-        public WalletController(IWalletRepository walletRepository)
+        public WalletController(IWalletRepository walletRepository, IUserRepository userRepository)
         {
             _walletRepository = walletRepository;
+            _userRepository = userRepository;
         }
 
         [HttpPost("add-token")]
         public async Task<IActionResult> AddToken([FromBody] AddTokenRequest request)
         {
-            
-            if (string.IsNullOrEmpty(request.UserId))
+            var handler = new JwtSecurityTokenHandler();
+            var jwtSecurityToken = handler.ReadJwtToken(request.Token);
+            var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+
+            if(role != Roles.ADMIN.ToString())
             {
-                return BadRequest("UserId is required.");
-            } 
-            if (!ObjectId.TryParse(request.UserId, out _))
+                ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
+                return Unauthorized(ModelState);
+            }
+
+            var user = await _userRepository.GetUserAsync(request.UserName);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            if (!ObjectId.TryParse(user.Id, out _))
             {
                 return BadRequest("UserId is not a valid ObjectId.");
             }       
-            var wallet = await _walletRepository.GetWalletByUserIdAsync(request.UserId);
+            var wallet = await _walletRepository.GetWalletByUserIdAsync(user.Id);
             if (wallet == null)
             {
                 return NotFound("Wallet not found for the provided UserId.");
             }
 
-            await _walletRepository.AddTokenAsync(request.UserId, request.TokenType, request.Quantity);
+            await _walletRepository.AddTokenAsync(user.Id, request.TokenType, request.Quantity);
             return Ok("Token added successfully.");
         }
 
         [HttpPost("remove-token")]
         public async Task<IActionResult> RemoveToken([FromBody] RemoveTokenRequest request)
         {
-            if (string.IsNullOrEmpty(request.UserId))
+            var handler = new JwtSecurityTokenHandler();
+            var jwtSecurityToken = handler.ReadJwtToken(request.Token);
+            var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+
+            if(role != Roles.ADMIN.ToString())
             {
-                return BadRequest("UserId is required.");
+                ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
+                return Unauthorized(ModelState);
             }
 
-            var success = await _walletRepository.RemoveTokenAsync(request.UserId, request.TokenType, request.Quantity);
+            var user = await _userRepository.GetUserAsync(request.UserName);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var success = await _walletRepository.RemoveTokenAsync(user.Id, request.TokenType, request.Quantity);
             if (!success)
             {
                 return BadRequest("Insufficient balance or token not found.");
@@ -60,12 +87,13 @@ namespace Urbano_API.Controllers
         [HttpPost("verify-token")]
         public async Task<IActionResult> VerifyToken([FromBody] VerifyTokenRequest request)
         {
-            if (string.IsNullOrEmpty(request.UserId))
+            var user = await _userRepository.GetUserAsync(request.UserName);
+            if (user == null)
             {
-                return BadRequest("UserId is required.");
+                return NotFound("User not found");
             }
 
-            var isValid = await _walletRepository.VerifyTokenAsync(request.UserId, request.TokenType, request.RequiredQuantity);
+            var isValid = await _walletRepository.VerifyTokenAsync(user.Id, request.TokenType, request.RequiredQuantity);
             if (!isValid)
             {
                 return BadRequest("Insufficient tokens.");
@@ -77,14 +105,14 @@ namespace Urbano_API.Controllers
         [HttpPost("balance")]
         public async Task<IActionResult> GetBalance([FromBody] BalanceRequest request)
         {
-            if (string.IsNullOrEmpty(request.UserId))
+            var user = await _userRepository.GetUserAsync(request.UserName);
+            if (user == null)
             {
-                return BadRequest("UserId is required.");
+                return NotFound("User not found");
             }
 
-            var balance = await _walletRepository.GetBalanceAsync(request.UserId);
+            var balance = await _walletRepository.GetBalanceAsync(user.Id);
             return Ok(balance);
         }
     }
 }
-

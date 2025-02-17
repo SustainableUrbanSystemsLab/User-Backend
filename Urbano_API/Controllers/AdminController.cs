@@ -121,5 +121,4 @@ public class AdminController: ControllerBase
         await _userRepository.UpdateAsync(user.Id, user);
         return Ok("Succesfully updated");
     }
-
 }
