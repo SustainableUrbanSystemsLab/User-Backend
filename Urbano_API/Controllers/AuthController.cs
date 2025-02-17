@@ -285,6 +285,7 @@ public class AuthController : ControllerBase
 
         return Ok("Simulation successfully executed.");
     }
+    
     [HttpGet("count/{userId}")]
     public async Task<IActionResult> GetUserSimulationCount(string userId)
     {
@@ -298,46 +299,69 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("/otp/generate")]
-    public async Task<IActionResult> GenerateOTP([FromBody] OTPDTO emailObj)
+    public async Task<IActionResult> GenerateOTP([FromBody] OTPDTO emailObj, [FromQuery] string purpose)
     {
+        if (string.IsNullOrEmpty(purpose))
+        {
+            return BadRequest("Purpose is required.");
+        }
+
+        if (purpose != "password-reset" && purpose != "email-change")
+        {
+            return BadRequest("Invalid purpose. Allowed values: 'password-reset', 'email-change'.");
+        }
+
         if (!_authService.IsValidUserName(emailObj.UserName))
         {
             return BadRequest("Incorrect e-mail address.");
         }
-        var resp = await _userRepository.GetUserAsync(emailObj.UserName);
-        if (resp is null)
-        {
-            return BadRequest("Incorrect e-mail address");
-        }
 
-        _verificationService.SendOTP(resp.UserName, resp.FirstName);
-
-        return Ok("Password change request sent to mail");
-    }
-
-    [HttpPost("/otp/verify")]
-    public async Task<IActionResult> VerifyOTP([FromBody] UserVerificationDTO verUser)
-    {
-        var user = await _verificationRepository.GetUserAsync(verUser.UserName);
+        var user = await _userRepository.GetUserAsync(emailObj.UserName);
         if (user is null)
         {
             return BadRequest("User doesn't exist");
         }
 
-        if (user.OTP != verUser.OTP)
+        _verificationService.SendOTP(user.UserName, user.FirstName, purpose);
+
+        return Ok($"{purpose} OTP sent to email");
+    }
+
+    [HttpPost("/otp/verify")]
+    public async Task<IActionResult> VerifyOTP([FromBody] UserVerificationDTO verUser, [FromQuery] string purpose)
+    {
+        if (string.IsNullOrEmpty(purpose))
         {
-            ModelState.AddModelError("Unauthorized", "Incorrect OTP");
+            return BadRequest("Purpose is required.");
+        }
+
+        if (purpose != "password-reset" && purpose != "email-change")
+        {
+            return BadRequest("Invalid purpose. Allowed values: 'password-reset', 'email-change'.");
+        }
+
+        var verification = await _verificationRepository.GetUserAsync(verUser.UserName);
+        if (verification is null)
+        {
+            return BadRequest("User doesn't exist");
+        }
+
+        if (verification.OTP != verUser.OTP || verification.OTPExpiry < DateTime.UtcNow)
+        {
+            ModelState.AddModelError("Unauthorized", "Incorrect or expired OTP");
             return Unauthorized(ModelState);
         }
 
         var expiresAt = DateTime.UtcNow.AddMinutes(10);
 
         var claims = new List<Claim> {
-                    new Claim(ClaimTypes.Email, verUser.UserName),
-                };
+            new Claim(ClaimTypes.Email, verUser.UserName),
+            new Claim("Purpose", purpose) // Add a claim to indicate the purpose
+        };
+
         string token = _verificationService.CreateToken(claims, expiresAt);
 
-        return Ok(token);
+        return Ok(new { token });
     }
 
     [HttpGet("/verify/{token}")]
@@ -373,16 +397,24 @@ public class AuthController : ControllerBase
     [HttpPut("/password")]
     public async Task<IActionResult> UpdatePassword([FromBody] PasswordDTO verPass)
     {
-        var resp = _verificationService.Verify(verPass.Token);
-        if (!resp)
+        var isValidToken = _verificationService.Verify(verPass.Token);
+        if (!isValidToken)
         {
-            ModelState.AddModelError("Unauthorized", "You are not authorized to access the endpoint.");
+            ModelState.AddModelError("Unauthorized", "Invalid or expired token.");
             return Unauthorized(ModelState);
         }
 
         var handler = new JwtSecurityTokenHandler();
         var jwtSecurityToken = handler.ReadJwtToken(verPass.Token);
         var userName = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value;
+
+        // Verify the token's purpose
+        var purpose = jwtSecurityToken.Claims.FirstOrDefault(claim => claim.Type == "Purpose")?.Value;
+        if (purpose != "password-reset")
+        {
+            ModelState.AddModelError("Unauthorized", "Invalid token purpose.");
+            return Unauthorized(ModelState);
+        }
 
         var user = await _userRepository.GetUserAsync(userName);
         if (user is null)
@@ -393,6 +425,55 @@ public class AuthController : ControllerBase
         user.Password = _authService.GeneratePasswordHash(verPass.Password);
         await _userRepository.UpdateAsync(user.Id, user);
 
-        return Ok("User Succesfully created");
+        return Ok("Password successfully updated");
     }
+
+    [HttpPut("/email")]
+    public async Task<IActionResult> UpdateEmail([FromBody] EmailChangeDTO emailChangeDTO)
+    {
+        var isValidToken = _verificationService.Verify(emailChangeDTO.Token);
+        if (!isValidToken)
+        {
+            ModelState.AddModelError("Unauthorized", "Invalid or expired token.");
+            return Unauthorized(ModelState);
+        }
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(emailChangeDTO.Token);
+        var userName = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value;
+
+        // Verify the token's purpose
+        var purpose = jwtSecurityToken.Claims.FirstOrDefault(claim => claim.Type == "Purpose")?.Value;
+        if (purpose != "email-change")
+        {
+            ModelState.AddModelError("Unauthorized", "Invalid token purpose.");
+            return Unauthorized(ModelState);
+        }
+
+        var user = await _userRepository.GetUserAsync(userName);
+        if (user is null)
+        {
+            return BadRequest("User doesn't exist");
+        }
+
+        // Validate the new email
+        if (!_authService.IsValidUserName(emailChangeDTO.NewEmail))
+        {
+            return BadRequest("Invalid new email address.");
+        }
+
+        // Check if the new email is already in use
+        var existingUser = await _userRepository.GetUserAsync(emailChangeDTO.NewEmail);
+        if (existingUser != null)
+        {
+            return BadRequest("Email address is already in use.");
+        }
+
+        // Update the email
+        user.UserName = emailChangeDTO.NewEmail;
+        await _userRepository.UpdateAsync(user.Id, user);
+
+        return Ok("Email successfully updated");
+    }
+
 }

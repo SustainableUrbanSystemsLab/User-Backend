@@ -20,7 +20,7 @@ public class VerificationRepository: IVerificationRepository
             urbanoStoreDatabaseSettings.Value.VerificationsCollectionName);
     }
 
-    public async Task UpsertAsync(string otp, string userName)
+    public async Task UpsertAsync(string otp, string userName, DateTime otpExpiry)
     {
         var resp = await _verificationCollection.Find(x => x.UserName == userName).FirstOrDefaultAsync();
         if (resp == null)
@@ -28,11 +28,13 @@ public class VerificationRepository: IVerificationRepository
             Verification verification = new Verification();
             verification.UserName = userName;
             verification.OTP = otp;
+            verification.OTPExpiry = otpExpiry;
             await _verificationCollection.InsertOneAsync(verification);
         }
         else
         {
             resp.OTP = otp;
+            resp.OTPExpiry = otpExpiry;
             await _verificationCollection.ReplaceOneAsync(x => x.UserName == userName, resp);
         }
     }
