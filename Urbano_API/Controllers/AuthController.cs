@@ -235,6 +235,17 @@ public class AuthController : ControllerBase
         }
         return BadRequest("User already exists");
     }
+    [HttpGet("daily-count/{userId}")]
+    public async Task<IActionResult> GetUserDailyLoginCount(string userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            return BadRequest("UserId is required.");
+        }
+
+        var count = await _loginsRepository.GetUserDailyLoginCountAsync(userId);
+        return Ok(new { userId, totalDailyLogins = count });
+    }
 
     [HttpPost("/simulate")]
     public async Task<IActionResult> Simulate([FromBody] SimulationsDTO simulationDTO)

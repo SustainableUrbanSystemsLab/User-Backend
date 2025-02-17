@@ -13,4 +13,7 @@ public interface ILoginsRepository
     public Task<Logins?> IncrementUniqueLoginsWeeklyValueAsync(DateTime date, DateTime previousLoginDate, int incrementBy);
     public Task<Logins?> IncrementUniqueLoginsMonthlyValueAsync(DateTime date,  DateTime previousLoginDate, int incrementBy);
     public Task<Logins?> IncrementUniqueLoginsYearlyValueAsync(DateTime date,  DateTime previousLoginDate, int incrementBy);
+
+    public Task<int> GetUserDailyLoginCountAsync(string userId);
+
 }

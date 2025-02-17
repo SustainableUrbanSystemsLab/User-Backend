@@ -344,4 +344,13 @@ public class LoginsRepository: ILoginsRepository
         }
         return null;
     }
+    public async Task<int> GetUserDailyLoginCountAsync(string userId)
+    {
+        var filter = Builders<Logins>.Filter.Eq(log => log.UserId, userId);
+
+        // Count the number of unique login dates
+        var distinctDays = await _loginsDailyCollection.DistinctAsync(log => log.DailyLoginDate, filter);
+        return distinctDays.ToList().Count;
+    }
+
 }
