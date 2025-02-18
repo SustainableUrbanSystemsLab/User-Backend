@@ -12,6 +12,53 @@ Eddy3D is an autoCAD extension designed to provide advanced simulations and visu
 
 # Release Notes
 
+## Version 0.2.0
+
+### Features
+- **Account Infrastructure (Stable)**:  
+  - Account Data Layout
+    - Personal Data
+      - Username/Email
+      - Password
+      - Id
+    - Personal Metrics
+      - Total Simulations Run
+      - Daily Logins
+    - Quota Token Wallet 
+  - Accout Type Hierarchy
+    - User
+    - Admin
+    - VIP
+  - Email Verification
+    - Verification Link Email
+  - Account Mutation Functionality
+    - Passwrod Change
+    - Email Change
+    - OTP Emails
+  - API Calls
+    - Ready for front end, testing in Hoppscotch
+- **Administrative Functionalities**:  
+  - User Management
+    - Account Deactivation
+    - Account Reactivation
+  - Quota Management
+    - Quota Token Issuing
+    - View Token Wallets
+
+- **Secrets and Enviornment Variables (Initial)**:  
+  - Email Strings
+
+### Bug Fixes
+- Removed Saving Login Date for Registering
+
+### Known Issues
+- Admin Controller not completely covered by authorization
+- No exception handling for Setting Roles
+- No handling redudant PUTs
+- DTOs for requests need refactoring
+- Need to standardize how users are fetched, id vs name
+- Wallet functions/calls need to be standardized
+
 ## Version 0.1.0
 
 ### Features
@@ -103,26 +150,3 @@ Eddy3D is an autoCAD extension designed to provide advanced simulations and visu
   - MongoDB
     - User data
     - Metrics data  
-
----
-
-## Sendgrid API Key (account under audit)
-
-> `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`
-
----
-
-## MongoDB on Atlas
-Connection string: 
-
-> `mongodb+srv://admin:Goofiness-Battle4-Prodigal@urbano-backend-users.syw1bpp.mongodb.net/?retryWrites=true&w=majority`
-
-[Web Login](https://cloud.mongodb.com/v2/652813be4ab4f40f3379b837#/overview)  
-
----
-
-## Hoppscotch Workspace unit tests
-
-[Link](https://hoppscotch.io)
-
----
