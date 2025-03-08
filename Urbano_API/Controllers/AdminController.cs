@@ -11,6 +11,7 @@ namespace Urbano_API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+//Test
 public class AdminController: ControllerBase
 {
     private readonly IUserRepository _userRepository;
