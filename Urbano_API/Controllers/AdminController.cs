@@ -1,17 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using Urbano_API.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Urbano_API.Models;
 using Urbano_API.Repositories;
 using Urbano_API.Interfaces;
 using Urbano_API.DTOs;
+using System.Security.Claims;
 
 namespace Urbano_API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-//Test
+[Authorize(Roles = "Admin")] // Only users with the "Admin" role can access this controller
 public class AdminController: ControllerBase
 {
     private readonly IUserRepository _userRepository;
@@ -24,23 +23,6 @@ public class AdminController: ControllerBase
     [HttpPost]
     public async Task<IActionResult> UpdateRateLimit([FromBody] string userName, string token, int maxAttempts)
     {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(token);
-        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-        if(role != Roles.ADMIN.ToString())
-        {
-            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-            return Unauthorized(ModelState);
-        }
-
-        var name = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value;
-        
-        var admin = await _userRepository.GetUserAsync(name);
-        if (admin is null)
-        {
-            return BadRequest("User doesn't exist");
-        }
 
         var user = await _userRepository.GetUserAsync(userName);
 
@@ -58,7 +40,8 @@ public class AdminController: ControllerBase
 
         return Ok("Succesfully updated");
     }
-
+    
+    [Authorize]
     [HttpGet("user/role-get/{username}")]
     public async Task<IActionResult> GetUserRole(string username)
     {
@@ -74,15 +57,6 @@ public class AdminController: ControllerBase
     [HttpPut("user/role-set")]
     public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequest request)
     {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-        if(role != Roles.ADMIN.ToString())
-        {
-            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-            return Unauthorized(ModelState);
-        }
 
         var user = await _userRepository.GetUserAsync(request.UserName);
         if (user == null)
@@ -100,16 +74,6 @@ public class AdminController: ControllerBase
     [HttpPut("user/deactivate")]
     public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequest request)
     {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-        if(role != Roles.ADMIN.ToString())
-        {
-            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-            return Unauthorized(ModelState);
-        }
-
         var user = await _userRepository.GetUserAsync(request.UserName);
         if (user == null)
         {
