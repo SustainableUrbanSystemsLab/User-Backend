@@ -6,119 +6,148 @@ using Urbano_API.Models;
 using Urbano_API.Repositories;
 using Urbano_API.Interfaces;
 using Urbano_API.DTOs;
+using Microsoft.Extensions.Logging;
 
-namespace Urbano_API.Controllers;
-
-[ApiController]
-[Route("[controller]")]
-public class AdminController: ControllerBase
+namespace Urbano_API.Controllers
 {
-    private readonly IUserRepository _userRepository;
-
-    public AdminController(IUserRepository userRepository)
-	{
-        _userRepository = userRepository;
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> UpdateRateLimit([FromBody] string userName, string token, int maxAttempts)
+    [ApiController]
+    [Route("[controller]")]
+    public class AdminController : ControllerBase
     {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(token);
-        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+        private readonly IUserRepository _userRepository;
+        private readonly ILogger<AdminController> _logger;
 
-        if(role != Roles.ADMIN.ToString())
+        public AdminController(IUserRepository userRepository, ILogger<AdminController> logger)
         {
-            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-            return Unauthorized(ModelState);
+            _userRepository = userRepository;
+            _logger = logger;
         }
 
-        var name = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value;
-        
-        var admin = await _userRepository.GetUserAsync(name);
-        if (admin is null)
+        [HttpPost]
+        public async Task<IActionResult> UpdateRateLimit([FromBody] string userName, string token, int maxAttempts)
         {
-            return BadRequest("User doesn't exist");
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtSecurityToken = handler.ReadJwtToken(token);
+                var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+
+                if (role != Roles.ADMIN.ToString())
+                {
+                    ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
+                    return Unauthorized(ModelState);
+                }
+
+                var name = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value;
+                var admin = await _userRepository.GetUserAsync(name);
+                if (admin is null)
+                {
+                    return BadRequest("User doesn't exist");
+                }
+
+                var user = await _userRepository.GetUserAsync(userName);
+                if (user == null)
+                {
+                    ModelState.AddModelError("Unauthorized", "User doesn't exist");
+                    return Unauthorized(ModelState);
+                }
+
+                user.MaxAttempts = maxAttempts;
+                user.AttemptsLeft = maxAttempts;
+
+                await _userRepository.UpdateAsync(user.Id, user);
+                return Ok("Successfully updated");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating rate limit");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
-        var user = await _userRepository.GetUserAsync(userName);
-
-        if (user == null)
+        [HttpGet("user/role-get/{username}")]
+        public async Task<IActionResult> GetUserRole(string username)
         {
-            ModelState.AddModelError("Unauthorized", "User doesn't exist");
-            return Unauthorized(ModelState);
+            try
+            {
+                var user = await _userRepository.GetUserAsync(username);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                return Ok(new { Role = user.Role });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching user role");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
-        user.MaxAttempts = maxAttempts;
-        user.AttemptsLeft = maxAttempts;
-
-    
-        await _userRepository.UpdateAsync(user.Id, user);
-
-        return Ok("Succesfully updated");
-    }
-
-    [HttpGet("user/role-get/{username}")]
-    public async Task<IActionResult> GetUserRole(string username)
-    {
-        var user = await _userRepository.GetUserAsync(username);
-        if (user == null)
+        [HttpPut("user/role-set")]
+        public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequest request)
         {
-            return NotFound("User not found");
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtSecurityToken = handler.ReadJwtToken(request.Token);
+                var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+
+                if (role != Roles.ADMIN.ToString())
+                {
+                    ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
+                    return Unauthorized(ModelState);
+                }
+
+                var user = await _userRepository.GetUserAsync(request.UserName);
+                if (user == null)
+                {
+                    return NotFound("User doesn't exist");
+                }
+
+                user.Role = request.NewRole;
+                await _userRepository.UpdateAsync(user.Id, user);
+                return Ok("Successfully updated");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting user role");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
-        return Ok(new { Role = user.Role });
-    }
-
-    [HttpPut("user/role-set")]
-    public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequest request)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-        if(role != Roles.ADMIN.ToString())
+        [HttpPut("user/deactivate")]
+        public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequest request)
         {
-            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-            return Unauthorized(ModelState);
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtSecurityToken = handler.ReadJwtToken(request.Token);
+                var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+
+                if (role != Roles.ADMIN.ToString())
+                {
+                    ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
+                    return Unauthorized(ModelState);
+                }
+
+                var user = await _userRepository.GetUserAsync(request.UserName);
+                if (user == null)
+                {
+                    return NotFound("User doesn't exist");
+                }
+
+                user.Deactivated = request.Deactivated;
+                await _userRepository.UpdateAsync(user.Id, user);
+                return Ok("Successfully updated");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deactivating user");
+                return StatusCode(500, "Internal server error");
+            }
         }
-
-        var user = await _userRepository.GetUserAsync(request.UserName);
-        if (user == null)
-        {
-            return NotFound("User doesn't exist");
-        }
-
-        user.Role = request.NewRole;
-
-        // Update the user's role
-        await _userRepository.UpdateAsync(user.Id, user);
-        return Ok("Succesfully updated");
-    }
-
-    [HttpPut("user/deactivate")]
-    public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequest request)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-        if(role != Roles.ADMIN.ToString())
-        {
-            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-            return Unauthorized(ModelState);
-        }
-
-        var user = await _userRepository.GetUserAsync(request.UserName);
-        if (user == null)
-        {
-            return NotFound("User doesn't exist");
-        }
-
-        user.Deactivated = request.Deactivated;
-
-        // Update the user's deactivation status
-        await _userRepository.UpdateAsync(user.Id, user);
-        return Ok("Succesfully updated");
     }
 }
+
