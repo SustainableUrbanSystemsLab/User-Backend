@@ -1,30 +1,26 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 using Urbano_API.DTOs;
 using Urbano_API.Interfaces;
 using Urbano_API.Models;
 using MongoDB.Bson;
-using Urbano_API.Repositories;
-using Microsoft.Extensions.Logging;
 
 namespace Urbano_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize(Roles = "Admin")] // Only admins can access wallet-related endpoints
     public class WalletController : ControllerBase
     {
         private readonly IWalletRepository _walletRepository;
         private readonly IUserRepository _userRepository;
-        private readonly ILogger<WalletController> _logger;
 
-        public WalletController(IWalletRepository walletRepository, IUserRepository userRepository, ILogger<WalletController> logger)
+        public WalletController(IWalletRepository walletRepository, IUserRepository userRepository)
         {
             _walletRepository = walletRepository;
             _userRepository = userRepository;
-            _logger = logger;
         }
 
         [HttpPost("add-token")]
@@ -32,16 +28,6 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-                var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-                if (role != Roles.ADMIN.ToString())
-                {
-                    ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-                    return Unauthorized(ModelState);
-                }
-
                 var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
@@ -54,6 +40,7 @@ namespace Urbano_API.Controllers
                 }
 
                 var wallet = await _walletRepository.GetWalletByUserIdAsync(user.Id!);
+
                 if (wallet == null)
                 {
                     return NotFound("Wallet not found for the provided UserId.");
@@ -62,15 +49,10 @@ namespace Urbano_API.Controllers
                 await _walletRepository.AddTokenAsync(user.Id!, request.TokenType, request.Quantity);
                 return Ok("Token added successfully.");
             }
-            catch (FormatException ex)
-            {
-                _logger.LogError(ex, "Format exception in AddToken");
-                return BadRequest($"Invalid input: {ex.Message}");
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled exception in AddToken");
-                return StatusCode(500, "Internal server error");
+                // Optionally log the exception here.
+                return StatusCode(500, "An error occurred while adding the token: " + ex.Message);
             }
         }
 
@@ -79,16 +61,6 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-                var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-                if (role != Roles.ADMIN.ToString())
-                {
-                    ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-                    return Unauthorized(ModelState);
-                }
-
                 var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
@@ -105,8 +77,8 @@ namespace Urbano_API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled exception in RemoveToken");
-                return StatusCode(500, "Internal server error");
+                // Optionally log the exception here.
+                return StatusCode(500, "An error occurred while removing the token: " + ex.Message);
             }
         }
 
@@ -131,8 +103,8 @@ namespace Urbano_API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled exception in VerifyToken");
-                return StatusCode(500, "Internal server error");
+                // Optionally log the exception here.
+                return StatusCode(500, "An error occurred while verifying the token: " + ex.Message);
             }
         }
 
@@ -152,10 +124,9 @@ namespace Urbano_API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled exception in GetBalance");
-                return StatusCode(500, "Internal server error");
+                // Optionally log the exception here.
+                return StatusCode(500, "An error occurred while retrieving the balance: " + ex.Message);
             }
         }
     }
 }
-
