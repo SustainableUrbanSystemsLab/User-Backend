@@ -46,12 +46,14 @@ public class AuthController : ControllerBase
 
         var pastLoginDate = resp.LastLoginDate;
 
+        // User does not exist
         if (resp is null)
         {
             ModelState.AddModelError("Unauthorized", "You are not authorized to access the endpoint.");
             return Unauthorized(ModelState);
         }
 
+        // User's account was previously deactivated
         if (resp.Deactivated == true)
         {
             ModelState.AddModelError("Unauthorized", "Your account has been deactivated.");
