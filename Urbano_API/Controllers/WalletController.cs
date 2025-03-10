@@ -1,17 +1,17 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 using Urbano_API.DTOs;
 using Urbano_API.Interfaces;
 using Urbano_API.Models;
 using MongoDB.Bson;
-using Urbano_API.Repositories;
+
 namespace Urbano_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize(Roles = "Admin")] // Only admins can access wallet-related endpoints
     public class WalletController : ControllerBase
     {
         private readonly IWalletRepository _walletRepository;
@@ -26,16 +26,6 @@ namespace Urbano_API.Controllers
         [HttpPost("add-token")]
         public async Task<IActionResult> AddToken([FromBody] AddTokenRequest request)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-            var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-            if(role != Roles.ADMIN.ToString())
-            {
-                ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-                return Unauthorized(ModelState);
-            }
-
             var user = await _userRepository.GetUserAsync(request.UserName);
             if (user == null)
             {
@@ -59,16 +49,6 @@ namespace Urbano_API.Controllers
         [HttpPost("remove-token")]
         public async Task<IActionResult> RemoveToken([FromBody] RemoveTokenRequest request)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-            var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-            if(role != Roles.ADMIN.ToString())
-            {
-                ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-                return Unauthorized(ModelState);
-            }
-
             var user = await _userRepository.GetUserAsync(request.UserName);
             if (user == null)
             {
