@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Urbano_API.Models;
 using Urbano_API.Repositories;
@@ -6,84 +6,114 @@ using Urbano_API.Interfaces;
 using Urbano_API.DTOs;
 using System.Security.Claims;
 
-namespace Urbano_API.Controllers;
-
-[ApiController]
-[Route("[controller]")]
-[Authorize(Roles = "Admin")] // Only users with the "Admin" role can access this controller
-public class AdminController: ControllerBase
+namespace Urbano_API.Controllers
 {
-    private readonly IUserRepository _userRepository;
-
-    public AdminController(IUserRepository userRepository)
-	{
-        _userRepository = userRepository;
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> UpdateRateLimit([FromBody] string userName, string token, int maxAttempts)
+    [ApiController]
+    [Route("[controller]")]
+    [Authorize(Roles = "Admin")] // Only users with the "Admin" role can access this controller
+    public class AdminController : ControllerBase
     {
+        private readonly IUserRepository _userRepository;
 
-        var user = await _userRepository.GetUserAsync(userName);
-
-        if (user == null)
+        public AdminController(IUserRepository userRepository)
         {
-            ModelState.AddModelError("Unauthorized", "User doesn't exist");
-            return Unauthorized(ModelState);
+            _userRepository = userRepository;
         }
 
-        user.MaxAttempts = maxAttempts;
-        user.AttemptsLeft = maxAttempts;
-
-    
-        await _userRepository.UpdateAsync(user.Id, user);
-
-        return Ok("Succesfully updated");
-    }
-    
-    [Authorize]
-    [HttpGet("user/role-get/{username}")]
-    public async Task<IActionResult> GetUserRole(string username)
-    {
-        var user = await _userRepository.GetUserAsync(username);
-        if (user == null)
+        [HttpPost]
+        public async Task<IActionResult> UpdateRateLimit([FromBody] string userName, string token, int maxAttempts)
         {
-            return NotFound("User not found");
+            try
+            {
+                var user = await _userRepository.GetUserAsync(userName);
+
+                if (user == null)
+                {
+                    ModelState.AddModelError("Unauthorized", "User doesn't exist");
+                    return Unauthorized(ModelState);
+                }
+
+                user.MaxAttempts = maxAttempts;
+                user.AttemptsLeft = maxAttempts;
+
+                await _userRepository.UpdateAsync(user.Id, user);
+
+                return Ok("Succesfully updated");
+            }
+            catch (Exception ex)
+            {
+                // Optionally log the exception here
+                return StatusCode(500, "An error occurred while updating the rate limit: " + ex.Message);
+            }
         }
 
-        return Ok(new { Role = user.Role });
-    }
-
-    [HttpPut("user/role-set")]
-    public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequest request)
-    {
-
-        var user = await _userRepository.GetUserAsync(request.UserName);
-        if (user == null)
+        [Authorize]
+        [HttpGet("user/role-get/{username}")]
+        public async Task<IActionResult> GetUserRole(string username)
         {
-            return NotFound("User doesn't exist");
+            try
+            {
+                var user = await _userRepository.GetUserAsync(username);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                return Ok(new { Role = user.Role });
+            }
+            catch (Exception ex)
+            {
+                // Optionally log the exception here
+                return StatusCode(500, "An error occurred while retrieving the user role: " + ex.Message);
+            }
         }
 
-        user.Role = request.NewRole;
-
-        // Update the user's role
-        await _userRepository.UpdateAsync(user.Id, user);
-        return Ok("Succesfully updated");
-    }
-
-    [HttpPut("user/deactivate")]
-    public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequest request)
-    {
-        var user = await _userRepository.GetUserAsync(request.UserName);
-        if (user == null)
+        [HttpPut("user/role-set")]
+        public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequest request)
         {
-            return NotFound("User doesn't exist");
+            try
+            {
+                var user = await _userRepository.GetUserAsync(request.UserName);
+                if (user == null)
+                {
+                    return NotFound("User doesn't exist");
+                }
+
+                user.Role = request.NewRole;
+
+                // Update the user's role
+                await _userRepository.UpdateAsync(user.Id, user);
+                return Ok("Succesfully updated");
+            }
+            catch (Exception ex)
+            {
+                // Optionally log the exception here
+                return StatusCode(500, "An error occurred while setting the user role: " + ex.Message);
+            }
         }
 
-        user.Deactivated = request.Deactivated;
+        [HttpPut("user/deactivate")]
+        public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequest request)
+        {
+            try
+            {
+                var user = await _userRepository.GetUserAsync(request.UserName);
+                if (user == null)
+                {
+                    return NotFound("User doesn't exist");
+                }
 
-        // Update the user's deactivation status
-        await _userRepository.UpdateAsync(user.Id, user);
-        return Ok("Succesfully updated");
+                user.Deactivated = request.Deactivated;
+
+                // Update the user's deactivation status
+                await _userRepository.UpdateAsync(user.Id, user);
+                return Ok("Succesfully updated");
+            }
+            catch (Exception ex)
+            {
+                // Optionally log the exception here
+                return StatusCode(500, "An error occurred while deactivating the user: " + ex.Message);
+            }
+        }
     }
 }
