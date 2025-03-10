@@ -37,14 +37,16 @@ namespace Urbano_API.Controllers
                 if (!ObjectId.TryParse(user.Id, out _))
                 {
                     return BadRequest("UserId is not a valid ObjectId.");
-                }       
-                var wallet = await _walletRepository.GetWalletByUserIdAsync(user.Id);
+                }
+
+                var wallet = await _walletRepository.GetWalletByUserIdAsync(user.Id!);
+
                 if (wallet == null)
                 {
                     return NotFound("Wallet not found for the provided UserId.");
                 }
 
-                await _walletRepository.AddTokenAsync(user.Id, request.TokenType, request.Quantity);
+                await _walletRepository.AddTokenAsync(user.Id!, request.TokenType, request.Quantity);
                 return Ok("Token added successfully.");
             }
             catch (Exception ex)
@@ -65,7 +67,7 @@ namespace Urbano_API.Controllers
                     return NotFound("User not found");
                 }
 
-                var success = await _walletRepository.RemoveTokenAsync(user.Id, request.TokenType, request.Quantity);
+                var success = await _walletRepository.RemoveTokenAsync(user.Id!, request.TokenType, request.Quantity);
                 if (!success)
                 {
                     return BadRequest("Insufficient balance or token not found.");
@@ -91,7 +93,7 @@ namespace Urbano_API.Controllers
                     return NotFound("User not found");
                 }
 
-                var isValid = await _walletRepository.VerifyTokenAsync(user.Id, request.TokenType, request.RequiredQuantity);
+                var isValid = await _walletRepository.VerifyTokenAsync(user.Id!, request.TokenType, request.RequiredQuantity);
                 if (!isValid)
                 {
                     return BadRequest("Insufficient tokens.");
@@ -117,7 +119,7 @@ namespace Urbano_API.Controllers
                     return NotFound("User not found");
                 }
 
-                var balance = await _walletRepository.GetBalanceAsync(user.Id);
+                var balance = await _walletRepository.GetBalanceAsync(user.Id!);
                 return Ok(balance);
             }
             catch (Exception ex)

@@ -27,17 +27,43 @@ public class AuthController : ControllerBase
 
     public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IRegistrationsRepository registrationsRepository, IWalletRepository walletRepository, ILoginsRepository loginsRepository, ISimulationsRepository simulationsRepository)
     {
-        this.configuration = configuration;
-        _authService = authService;
-        _verificationService = verificationService;
-        _userRepository = userRepository;
-        _verificationRepository = verificationRepository;
-        _metricsRepository = metricsRepository;
-        _registrationsRepository = registrationsRepository;
-        _simulationsRepository = simulationsRepository;
-        _walletRepository = walletRepository;
-        _loginsRepository = loginsRepository;
-    }
+        private readonly IConfiguration configuration;
+        private readonly IAuthService _authService;
+        private readonly IVerificationService _verificationService;
+        private readonly IUserRepository _userRepository;
+        private readonly IVerificationRepository _verificationRepository;
+        private readonly IMetricsRepository _metricsRepository;
+        private readonly IRegistrationsRepository _registrationsRepository;
+        private readonly IWalletRepository _walletRepository;
+        private readonly ISimulationsRepository _simulationsRepository;
+        private readonly ILoginsRepository _loginsRepository;
+        private readonly ILogger<AuthController> _logger;
+
+        public AuthController(
+            IConfiguration configuration, 
+            IAuthService authService, 
+            IVerificationService verificationService, 
+            IUserRepository userRepository, 
+            IVerificationRepository verificationRepository, 
+            IMetricsRepository metricsRepository, 
+            IRegistrationsRepository registrationsRepository, 
+            IWalletRepository walletRepository, 
+            ILoginsRepository loginsRepository, 
+            ISimulationsRepository simulationsRepository,
+            ILogger<AuthController> logger)
+        {
+            this.configuration = configuration;
+            _authService = authService;
+            _verificationService = verificationService;
+            _userRepository = userRepository;
+            _verificationRepository = verificationRepository;
+            _metricsRepository = metricsRepository;
+            _registrationsRepository = registrationsRepository;
+            _simulationsRepository = simulationsRepository;
+            _walletRepository = walletRepository;
+            _loginsRepository = loginsRepository;
+            _logger = logger;
+        }
 
     [HttpPost("/login")]
     public async Task<IActionResult> Login([FromBody] LoginDTO credential)
@@ -69,7 +95,7 @@ public class AuthController : ControllerBase
             if (resp.Verified == true && resp.UserName == credential.UserName && CryptographicOperations.FixedTimeEquals(Convert.FromHexString(_authService.GeneratePasswordHash(credential.Password)), Convert.FromHexString(resp.Password)))
             {
                 //Update User Login Date
-                await _userRepository.UpdateLastLoginDateAsync(resp.Id, DateTime.UtcNow);
+                await _userRepository.UpdateLastLoginDateAsync(resp.Id!, DateTime.UtcNow);
                 // Creating the security context
                 var claims = new List<Claim> {
                         new Claim(ClaimTypes.Email, credential.UserName),
@@ -231,6 +257,11 @@ public class AuthController : ControllerBase
                 var updatedRegistrationWeekly = await _registrationsRepository.IncrementRegistrationsWeeklyValueAsync(DateTime.UtcNow, 1);
                 if (updatedRegistrationWeekly == null)
                 {
+                    resp.FirstName = user.FirstName;
+                    resp.LastName = user.LastName;
+                    resp.Password = _authService.GeneratePasswordHash(user.Password);
+                    await _userRepository.UpdateAsync(resp.Id!, resp);
+                    _verificationService.SendVerificationMail(user.UserName, $"{user.FirstName} {user.LastName}");
                     // TODO: Handle missing registration initialization.
                 }
                 var updatedRegistrationMonthly = await _registrationsRepository.IncrementRegistrationsMonthlyValueAsync(DateTime.UtcNow, 1);
@@ -254,7 +285,6 @@ public class AuthController : ControllerBase
             return StatusCode(500, "An error occurred while processing the registration request: " + ex.Message);
         }
     }
-
     [HttpGet("daily-count/{userId}")]
     public async Task<IActionResult> GetUserDailyLoginCount(string userId)
     {
