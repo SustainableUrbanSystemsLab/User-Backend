@@ -10,7 +10,7 @@ public class Wallet
     public string? Id { get; set; }
 
     [BsonRepresentation(BsonType.ObjectId)]
-    public string UserId { get; set; } = null!; // Link Wallet ot User's ID
+    public string UserId { get; set; } = null!; // Link Wallet or User's ID
 
     [BsonElement("QuotaTokens")]
     public List<QuotaToken> QuotaTokens { get; set; } = new List<QuotaToken>();

@@ -24,7 +24,7 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost("add-token")]
-        public async Task<IActionResult> AddToken([FromBody] AddTokenRequest request)
+        public async Task<IActionResult> AddToken([FromBody] AddTokenRequestDTO request)
         {
             try
             {
@@ -57,7 +57,7 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost("remove-token")]
-        public async Task<IActionResult> RemoveToken([FromBody] RemoveTokenRequest request)
+        public async Task<IActionResult> RemoveToken([FromBody] RemoveTokenRequestDTO request)
         {
             try
             {
@@ -83,7 +83,7 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost("verify-token")]
-        public async Task<IActionResult> VerifyToken([FromBody] VerifyTokenRequest request)
+        public async Task<IActionResult> VerifyToken([FromBody] VerifyTokenRequestDTO request)
         {
             try
             {
@@ -109,7 +109,7 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost("balance")]
-        public async Task<IActionResult> GetBalance([FromBody] BalanceRequest request)
+        public async Task<IActionResult> GetBalance([FromBody] BalanceRequestDTO request)
         {
             try
             {

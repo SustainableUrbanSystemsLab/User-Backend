@@ -4,7 +4,7 @@ namespace Urbano_API.DTOs;
 
 public class WalletDTO
 {
-   public List<QuotaTokenDTO> QuotaTokens { get; set; } = new List<QuotaTokenDTO>();
+    public List<QuotaTokenDTO> QuotaTokens { get; set; } = new List<QuotaTokenDTO>();
 
     public Wallet GetWallet(string userId)
     {
@@ -22,7 +22,7 @@ public class WalletDTO
 
 public class QuotaTokenDTO
 {
-    public string Type { get; set; } = null!;
+    public string Type { get; set; } = string.Empty;
 
     public int Quantity { get; set; } = 0;
 }

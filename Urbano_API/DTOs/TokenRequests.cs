@@ -1,4 +1,6 @@
-public class AddTokenRequest
+namespace Urbano_API.DTOs;
+
+public class AddTokenRequestDTO
 {
     public string Token { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
@@ -6,7 +8,7 @@ public class AddTokenRequest
     public int Quantity { get; set; } = 0;
 }
 
-public class RemoveTokenRequest
+public class RemoveTokenRequestDTO
 {
     public string Token { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
@@ -14,13 +16,13 @@ public class RemoveTokenRequest
     public int Quantity { get; set; } = 0;
 }
 
-public class BalanceRequest
+public class BalanceRequestDTO
 {
     public string Token { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
 }
 
-public class VerifyTokenRequest
+public class VerifyTokenRequestDTO
 {
     public string Token { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
