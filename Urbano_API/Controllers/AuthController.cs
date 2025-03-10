@@ -77,7 +77,7 @@ namespace Urbano_API.Controllers
                         Convert.FromHexString(_authService.GeneratePasswordHash(credential.Password)),
                         Convert.FromHexString(resp.Password)))
                 {
-                    await _userRepository.UpdateLastLoginDateAsync(resp.Id, DateTime.UtcNow);
+                    await _userRepository.UpdateLastLoginDateAsync(resp.Id!, DateTime.UtcNow);
                     var claims = new List<Claim> {
                         new Claim(ClaimTypes.Email, credential.UserName),
                         new Claim(ClaimTypes.Role, resp.Role),
@@ -148,7 +148,7 @@ namespace Urbano_API.Controllers
                     resp.FirstName = user.FirstName;
                     resp.LastName = user.LastName;
                     resp.Password = _authService.GeneratePasswordHash(user.Password);
-                    await _userRepository.UpdateAsync(resp.Id, resp);
+                    await _userRepository.UpdateAsync(resp.Id!, resp);
                     _verificationService.SendVerificationMail(user.UserName, $"{user.FirstName} {user.LastName}");
 
                     await _registrationsRepository.IncrementRegistrationsDailyValueAsync(DateTime.UtcNow, 1);

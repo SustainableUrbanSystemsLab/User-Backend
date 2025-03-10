@@ -35,7 +35,7 @@ public class HomeController : ControllerBase
         if (user.Date.CompareTo(DateTime.Today.AddHours(-24)) <= 0) {
             user.AttemptsLeft = user.MaxAttempts;
             user.Date = DateTime.Now;
-            await _userRepository.UpdateAsync(user.Id, user);
+            await _userRepository.UpdateAsync(user.Id!, user);
         } else if(user.AttemptsLeft == 0)
         {
             ModelState.AddModelError("Unauthorized", "Request Limit Reached");
@@ -43,7 +43,7 @@ public class HomeController : ControllerBase
         }
 
         user.AttemptsLeft -= 1;
-        await _userRepository.UpdateAsync(user.Id, user);
+        await _userRepository.UpdateAsync(user.Id!, user);
 
         return Ok("Succesfully logged in");
     }

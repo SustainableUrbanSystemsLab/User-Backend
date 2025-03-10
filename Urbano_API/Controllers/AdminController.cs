@@ -55,7 +55,7 @@ namespace Urbano_API.Controllers
                 user.MaxAttempts = maxAttempts;
                 user.AttemptsLeft = maxAttempts;
 
-                await _userRepository.UpdateAsync(user.Id, user);
+                await _userRepository.UpdateAsync(user.Id!, user);
                 return Ok("Successfully updated");
             }
             catch (Exception ex)
@@ -105,9 +105,14 @@ namespace Urbano_API.Controllers
                 {
                     return NotFound("User doesn't exist");
                 }
+                if (user.Role == request.NewRole)
+                {
+                // Either return a 304 Not Modified or a custom message.
+                return StatusCode(304, "No changes detected; user role remains unchanged.");
+                }
 
                 user.Role = request.NewRole;
-                await _userRepository.UpdateAsync(user.Id, user);
+                await _userRepository.UpdateAsync(user.Id!, user);
                 return Ok("Successfully updated");
             }
             catch (Exception ex)
@@ -137,9 +142,14 @@ namespace Urbano_API.Controllers
                 {
                     return NotFound("User doesn't exist");
                 }
+                if (user.Deactivated == request.Deactivated)
+                {
+            // Either return a 304 Not Modified or a custom message.
+            return StatusCode(304, "No changes detected; user deactivation remains unchanged.");
+                }
 
                 user.Deactivated = request.Deactivated;
-                await _userRepository.UpdateAsync(user.Id, user);
+                await _userRepository.UpdateAsync(user.Id!, user);
                 return Ok("Successfully updated");
             }
             catch (Exception ex)
