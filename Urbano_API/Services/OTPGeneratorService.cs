@@ -1,15 +1,22 @@
 ﻿using System;
+using System.Threading;
+
 namespace Urbano_API.Services
 {
     public static class OTPGeneratorService
     {
-        private static readonly ThreadLocal<System.Security.Cryptography.RandomNumberGenerator> crng = new ThreadLocal<System.Security.Cryptography.RandomNumberGenerator>(System.Security.Cryptography.RandomNumberGenerator.Create);
-        private static readonly ThreadLocal<byte[]> bytes = new ThreadLocal<byte[]>(() => new byte[sizeof(int)]);
+        private static readonly ThreadLocal<System.Security.Cryptography.RandomNumberGenerator> crng =
+            new ThreadLocal<System.Security.Cryptography.RandomNumberGenerator>(System.Security.Cryptography.RandomNumberGenerator.Create);
+        private static readonly ThreadLocal<byte[]> bytes =
+            new ThreadLocal<byte[]>(() => new byte[sizeof(int)]);
+
         public static int NextInt()
         {
-            crng.Value.GetBytes(bytes.Value);
-            return BitConverter.ToInt32(bytes.Value, 0) & int.MaxValue;
+            // Use null-forgiving operator since we ensure these values are initialized.
+            crng.Value!.GetBytes(bytes.Value!);
+            return BitConverter.ToInt32(bytes.Value!, 0) & int.MaxValue;
         }
+
         public static double NextDouble()
         {
             while (true)

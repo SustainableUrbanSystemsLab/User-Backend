@@ -1,17 +1,17 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 using Urbano_API.DTOs;
 using Urbano_API.Interfaces;
 using Urbano_API.Models;
 using MongoDB.Bson;
-using Urbano_API.Repositories;
+
 namespace Urbano_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize(Roles = "Admin")] // Only admins can access wallet-related endpoints
     public class WalletController : ControllerBase
     {
         private readonly IWalletRepository _walletRepository;
@@ -26,93 +26,107 @@ namespace Urbano_API.Controllers
         [HttpPost("add-token")]
         public async Task<IActionResult> AddToken([FromBody] AddTokenRequestDTO request)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-            var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-            if(role != Roles.ADMIN.ToString())
+            try
             {
-                ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-                return Unauthorized(ModelState);
+                var user = await _userRepository.GetUserAsync(request.UserName);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                if (!ObjectId.TryParse(user.Id, out _))
+                {
+                    return BadRequest("UserId is not a valid ObjectId.");
+                }
+
+                var wallet = await _walletRepository.GetWalletByUserIdAsync(user.Id!);
+
+                if (wallet == null)
+                {
+                    return NotFound("Wallet not found for the provided UserId.");
+                }
+
+                await _walletRepository.AddTokenAsync(user.Id!, request.TokenType, request.Quantity);
+                return Ok("Token added successfully.");
             }
-
-            var user = await _userRepository.GetUserAsync(request.UserName);
-            if (user == null)
+            catch (Exception ex)
             {
-                return NotFound("User not found");
+                // Optionally log the exception here.
+                return StatusCode(500, "An error occurred while adding the token: " + ex.Message);
             }
-
-            if (!ObjectId.TryParse(user.Id, out _))
-            {
-                return BadRequest("UserId is not a valid ObjectId.");
-            }       
-            var wallet = await _walletRepository.GetWalletByUserIdAsync(user.Id);
-            if (wallet == null)
-            {
-                return NotFound("Wallet not found for the provided UserId.");
-            }
-
-            await _walletRepository.AddTokenAsync(user.Id, request.TokenType, request.Quantity);
-            return Ok("Token added successfully.");
         }
 
         [HttpPost("remove-token")]
         public async Task<IActionResult> RemoveToken([FromBody] RemoveTokenRequestDTO request)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-            var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-            if(role != Roles.ADMIN.ToString())
+            try
             {
-                ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-                return Unauthorized(ModelState);
-            }
+                var user = await _userRepository.GetUserAsync(request.UserName);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
 
-            var user = await _userRepository.GetUserAsync(request.UserName);
-            if (user == null)
+                var success = await _walletRepository.RemoveTokenAsync(user.Id!, request.TokenType, request.Quantity);
+                if (!success)
+                {
+                    return BadRequest("Insufficient balance or token not found.");
+                }
+
+                return Ok("Token removed successfully.");
+            }
+            catch (Exception ex)
             {
-                return NotFound("User not found");
+                // Optionally log the exception here.
+                return StatusCode(500, "An error occurred while removing the token: " + ex.Message);
             }
-
-            var success = await _walletRepository.RemoveTokenAsync(user.Id, request.TokenType, request.Quantity);
-            if (!success)
-            {
-                return BadRequest("Insufficient balance or token not found.");
-            }
-
-            return Ok("Token removed successfully.");
         }
 
         [HttpPost("verify-token")]
         public async Task<IActionResult> VerifyToken([FromBody] VerifyTokenRequestDTO request)
         {
-            var user = await _userRepository.GetUserAsync(request.UserName);
-            if (user == null)
+            try
             {
-                return NotFound("User not found");
-            }
+                var user = await _userRepository.GetUserAsync(request.UserName);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
 
-            var isValid = await _walletRepository.VerifyTokenAsync(user.Id, request.TokenType, request.RequiredQuantity);
-            if (!isValid)
+                var isValid = await _walletRepository.VerifyTokenAsync(user.Id!, request.TokenType, request.RequiredQuantity);
+                if (!isValid)
+                {
+                    return BadRequest("Insufficient tokens.");
+                }
+
+                return Ok("Tokens verified.");
+            }
+            catch (Exception ex)
             {
-                return BadRequest("Insufficient tokens.");
+                // Optionally log the exception here.
+                return StatusCode(500, "An error occurred while verifying the token: " + ex.Message);
             }
-
-            return Ok("Tokens verified.");
         }
 
         [HttpPost("balance")]
         public async Task<IActionResult> GetBalance([FromBody] BalanceRequestDTO request)
         {
-            var user = await _userRepository.GetUserAsync(request.UserName);
-            if (user == null)
+            try
             {
-                return NotFound("User not found");
-            }
+                var user = await _userRepository.GetUserAsync(request.UserName);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
 
-            var balance = await _walletRepository.GetBalanceAsync(user.Id);
-            return Ok(balance);
+                var balance = await _walletRepository.GetBalanceAsync(user.Id!);
+                return Ok(balance);
+            }
+            catch (Exception ex)
+            {
+                // Optionally log the exception here.
+                return StatusCode(500, "An error occurred while retrieving the balance: " + ex.Message);
+            }
         }
     }
 }
