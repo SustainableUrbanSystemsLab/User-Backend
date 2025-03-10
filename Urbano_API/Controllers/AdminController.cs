@@ -1,26 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using Urbano_API.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Urbano_API.Models;
 using Urbano_API.Repositories;
 using Urbano_API.Interfaces;
 using Urbano_API.DTOs;
-using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace Urbano_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize(Roles = "Admin")] // Only users with the "Admin" role can access this controller
     public class AdminController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
-        private readonly ILogger<AdminController> _logger;
 
-        public AdminController(IUserRepository userRepository, ILogger<AdminController> logger)
+        public AdminController(IUserRepository userRepository)
         {
             _userRepository = userRepository;
-            _logger = logger;
         }
 
         [HttpPost]
@@ -28,24 +25,8 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtSecurityToken = handler.ReadJwtToken(token);
-                var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-                if (role != Roles.ADMIN.ToString())
-                {
-                    ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-                    return Unauthorized(ModelState);
-                }
-
-                var name = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value;
-                var admin = await _userRepository.GetUserAsync(name);
-                if (admin is null)
-                {
-                    return BadRequest("User doesn't exist");
-                }
-
                 var user = await _userRepository.GetUserAsync(userName);
+
                 if (user == null)
                 {
                     ModelState.AddModelError("Unauthorized", "User doesn't exist");
@@ -56,15 +37,17 @@ namespace Urbano_API.Controllers
                 user.AttemptsLeft = maxAttempts;
 
                 await _userRepository.UpdateAsync(user.Id, user);
-                return Ok("Successfully updated");
+
+                return Ok("Succesfully updated");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating rate limit");
-                return StatusCode(500, "Internal server error");
+                // Optionally log the exception here
+                return StatusCode(500, "An error occurred while updating the rate limit: " + ex.Message);
             }
         }
 
+        [Authorize]
         [HttpGet("user/role-get/{username}")]
         public async Task<IActionResult> GetUserRole(string username)
         {
@@ -80,8 +63,8 @@ namespace Urbano_API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching user role");
-                return StatusCode(500, "Internal server error");
+                // Optionally log the exception here
+                return StatusCode(500, "An error occurred while retrieving the user role: " + ex.Message);
             }
         }
 
@@ -90,16 +73,6 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-                var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-                if (role != Roles.ADMIN.ToString())
-                {
-                    ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-                    return Unauthorized(ModelState);
-                }
-
                 var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
@@ -107,13 +80,15 @@ namespace Urbano_API.Controllers
                 }
 
                 user.Role = request.NewRole;
+
+                // Update the user's role
                 await _userRepository.UpdateAsync(user.Id, user);
-                return Ok("Successfully updated");
+                return Ok("Succesfully updated");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error setting user role");
-                return StatusCode(500, "Internal server error");
+                // Optionally log the exception here
+                return StatusCode(500, "An error occurred while setting the user role: " + ex.Message);
             }
         }
 
@@ -122,16 +97,6 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-                var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-                if (role != Roles.ADMIN.ToString())
-                {
-                    ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-                    return Unauthorized(ModelState);
-                }
-
                 var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
@@ -139,15 +104,16 @@ namespace Urbano_API.Controllers
                 }
 
                 user.Deactivated = request.Deactivated;
+
+                // Update the user's deactivation status
                 await _userRepository.UpdateAsync(user.Id, user);
-                return Ok("Successfully updated");
+                return Ok("Succesfully updated");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deactivating user");
-                return StatusCode(500, "Internal server error");
+                // Optionally log the exception here
+                return StatusCode(500, "An error occurred while deactivating the user: " + ex.Message);
             }
         }
     }
 }
-
