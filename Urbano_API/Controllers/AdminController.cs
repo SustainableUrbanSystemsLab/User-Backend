@@ -71,7 +71,7 @@ public class AdminController: ControllerBase
     }
 
     [HttpPut("user/role-set")]
-    public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequest request)
+    public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequestDTO request)
     {
         var handler = new JwtSecurityTokenHandler();
         var jwtSecurityToken = handler.ReadJwtToken(request.Token);
@@ -97,7 +97,7 @@ public class AdminController: ControllerBase
     }
 
     [HttpPut("user/deactivate")]
-    public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequest request)
+    public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequestDTO request)
     {
         var handler = new JwtSecurityTokenHandler();
         var jwtSecurityToken = handler.ReadJwtToken(request.Token);

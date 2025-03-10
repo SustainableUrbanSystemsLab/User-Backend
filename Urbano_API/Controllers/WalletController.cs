@@ -24,7 +24,7 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost("add-token")]
-        public async Task<IActionResult> AddToken([FromBody] AddTokenRequest request)
+        public async Task<IActionResult> AddToken([FromBody] AddTokenRequestDTO request)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(request.Token);
@@ -57,7 +57,7 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost("remove-token")]
-        public async Task<IActionResult> RemoveToken([FromBody] RemoveTokenRequest request)
+        public async Task<IActionResult> RemoveToken([FromBody] RemoveTokenRequestDTO request)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(request.Token);
@@ -85,7 +85,7 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost("verify-token")]
-        public async Task<IActionResult> VerifyToken([FromBody] VerifyTokenRequest request)
+        public async Task<IActionResult> VerifyToken([FromBody] VerifyTokenRequestDTO request)
         {
             var user = await _userRepository.GetUserAsync(request.UserName);
             if (user == null)
@@ -103,7 +103,7 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost("balance")]
-        public async Task<IActionResult> GetBalance([FromBody] BalanceRequest request)
+        public async Task<IActionResult> GetBalance([FromBody] BalanceRequestDTO request)
         {
             var user = await _userRepository.GetUserAsync(request.UserName);
             if (user == null)
