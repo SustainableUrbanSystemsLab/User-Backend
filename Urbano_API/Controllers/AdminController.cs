@@ -21,11 +21,11 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateRateLimit([FromBody] string userName, string token, int maxAttempts)
+        public async Task<IActionResult> UpdateRateLimit([FromBody] string userId, string token, int maxAttempts)
         {
             try
             {
-                var user = await _userRepository.GetUserAsync(userName);
+                var user = await _userRepository.GetAsync(userId);
 
                 if (user == null)
                 {
@@ -47,11 +47,11 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPut("user/role-set")]
-        public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequest request)
+        public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequestDTO request)
         {
             try
             {
-                var user = await _userRepository.GetUserAsync(request.UserName);
+                var user = await _userRepository.GetAsync(request.UserId);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");
@@ -74,11 +74,11 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPut("user/deactivate")]
-        public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequest request)
+        public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequestDTO request)
         {
             try
             {
-                var user = await _userRepository.GetUserAsync(request.UserName);
+                var user = await _userRepository.GetUserAsync(request.UserId);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");
@@ -101,10 +101,10 @@ namespace Urbano_API.Controllers
         }
     }
 
-    [HttpGet("user/role-get/{username}")]
-    public async Task<IActionResult> GetUserRole(string username)
+    [HttpGet("user/role-get/{userId}")]
+    public async Task<IActionResult> GetUserRole(string userId)
     {
-        var user = await _userRepository.GetUserAsync(username);
+        var user = await _userRepository.GetAsync(userId);
         if (user == null)
         {
             return NotFound("User not found");
@@ -126,7 +126,7 @@ namespace Urbano_API.Controllers
             return Unauthorized(ModelState);
         }
 
-        var user = await _userRepository.GetUserAsync(request.UserName);
+        var user = await _userRepository.GetAsync(request.UserId);
         if (user == null)
         {
             return NotFound("User doesn't exist");
@@ -152,7 +152,7 @@ namespace Urbano_API.Controllers
             return Unauthorized(ModelState);
         }
 
-        var user = await _userRepository.GetUserAsync(request.UserName);
+        var user = await _userRepository.GetAsync(request.UserId);
         if (user == null)
         {
             return NotFound("User doesn't exist");
