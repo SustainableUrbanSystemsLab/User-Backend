@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Urbano_API.Models;
 using Urbano_API.Repositories;
@@ -47,7 +47,7 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPut("user/role-set")]
-        public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequest request)
+        public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequestDTO request)
         {
             try
             {
@@ -74,7 +74,7 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPut("user/deactivate")]
-        public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequest request)
+        public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequestDTO request)
         {
             try
             {
@@ -99,69 +99,16 @@ namespace Urbano_API.Controllers
                 return StatusCode(500, "An error occurred while deactivating the user: " + ex.Message);
             }
         }
-    }
-
-    [HttpGet("user/role-get/{username}")]
-    public async Task<IActionResult> GetUserRole(string username)
-    {
-        var user = await _userRepository.GetUserAsync(username);
-        if (user == null)
+        [HttpGet("user/role-get/{username}")]
+        public async Task<IActionResult> GetUserRole(string username)
         {
-            return NotFound("User not found");
+            var user = await _userRepository.GetUserAsync(username);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            return Ok(new { Role = user.Role });
         }
-
-        return Ok(new { Role = user.Role });
-    }
-
-    [HttpPut("user/role-set")]
-    public async Task<IActionResult> SetUserRole([FromBody] SetUserRoleRequestDTO request)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-        if(role != Roles.ADMIN.ToString())
-        {
-            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-            return Unauthorized(ModelState);
-        }
-
-        var user = await _userRepository.GetUserAsync(request.UserName);
-        if (user == null)
-        {
-            return NotFound("User doesn't exist");
-        }
-
-        user.Role = request.NewRole;
-
-        // Update the user's role
-        await _userRepository.UpdateAsync(user.Id, user);
-        return Ok("Succesfully updated");
-    }
-
-    [HttpPut("user/deactivate")]
-    public async Task<IActionResult> DeactivateUser([FromBody] DeactivateRequestDTO request)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(request.Token);
-        var role = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
-
-        if(role != Roles.ADMIN.ToString())
-        {
-            ModelState.AddModelError("Unauthorized", "Not authorized to access the API");
-            return Unauthorized(ModelState);
-        }
-
-        var user = await _userRepository.GetUserAsync(request.UserName);
-        if (user == null)
-        {
-            return NotFound("User doesn't exist");
-        }
-
-        user.Deactivated = request.Deactivated;
-
-        // Update the user's deactivation status
-        await _userRepository.UpdateAsync(user.Id, user);
-        return Ok("Succesfully updated");
     }
 }
