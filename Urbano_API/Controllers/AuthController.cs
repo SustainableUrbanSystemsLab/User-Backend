@@ -24,20 +24,7 @@ public class AuthController : ControllerBase
     private readonly IWalletRepository _walletRepository;
     private readonly ISimulationsRepository _simulationsRepository;
     private readonly ILoginsRepository _loginsRepository;
-
-    public AuthController(IConfiguration configuration, IAuthService authService, IVerificationService verificationService, IUserRepository userRepository, IVerificationRepository verificationRepository, IMetricsRepository metricsRepository, IRegistrationsRepository registrationsRepository, IWalletRepository walletRepository, ILoginsRepository loginsRepository, ISimulationsRepository simulationsRepository)
-    {
-        private readonly IConfiguration configuration;
-        private readonly IAuthService _authService;
-        private readonly IVerificationService _verificationService;
-        private readonly IUserRepository _userRepository;
-        private readonly IVerificationRepository _verificationRepository;
-        private readonly IMetricsRepository _metricsRepository;
-        private readonly IRegistrationsRepository _registrationsRepository;
-        private readonly IWalletRepository _walletRepository;
-        private readonly ISimulationsRepository _simulationsRepository;
-        private readonly ILoginsRepository _loginsRepository;
-        private readonly ILogger<AuthController> _logger;
+    private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             IConfiguration configuration, 
@@ -73,7 +60,6 @@ public class AuthController : ControllerBase
             var resp = await _userRepository.GetAsync(credential.UserId);
 
             // This line might throw a NullReferenceException if resp is null.
-            var pastLoginDate = resp.LastLoginDate;
 
             // User does not exist
             if (resp is null)
@@ -82,6 +68,7 @@ public class AuthController : ControllerBase
                 return Unauthorized(ModelState);
             }
 
+            var pastLoginDate = resp!.LastLoginDate;
             // User's account was previously deactivated
             if (resp.Deactivated == true)
             {
@@ -92,7 +79,7 @@ public class AuthController : ControllerBase
             var expiresAt = DateTime.UtcNow.AddMonths(1);
 
             // Verify the credential
-            if (resp.Verified == true && resp.UserId == credential.UserId && CryptographicOperations.FixedTimeEquals(Convert.FromHexString(_authService.GeneratePasswordHash(credential.Password)), Convert.FromHexString(resp.Password)))
+            if (resp.Verified == true && resp.UserName == credential.UserName && CryptographicOperations.FixedTimeEquals(Convert.FromHexString(_authService.GeneratePasswordHash(credential.Password)), Convert.FromHexString(resp.Password)))
             {
                 //Update User Login Date
                 await _userRepository.UpdateLastLoginDateAsync(resp.Id!, DateTime.UtcNow);
@@ -245,7 +232,7 @@ public class AuthController : ControllerBase
                 resp.FirstName = user.FirstName;
                 resp.LastName = user.LastName;
                 resp.Password = _authService.GeneratePasswordHash(user.Password);
-                await _userRepository.UpdateAsync(resp.Id, resp);
+                await _userRepository.UpdateAsync(resp.Id!, resp);
                 _verificationService.SendVerificationMail(user.UserName, user.FirstName + " " + user.LastName);
 
                 // Update all temporal registrations counters
@@ -523,7 +510,7 @@ public class AuthController : ControllerBase
             }
 
             user.Password = _authService.GeneratePasswordHash(verPass.Password);
-            await _userRepository.UpdateAsync(user.Id, user);
+            await _userRepository.UpdateAsync(user.Id!, user);
 
             return Ok("Password successfully updated");
         }
@@ -579,7 +566,7 @@ public class AuthController : ControllerBase
 
             // Update the email
             user.UserName = emailChangeDTO.NewEmail;
-            await _userRepository.UpdateAsync(user.Id, user);
+            await _userRepository.UpdateAsync(user.Id!, user);
 
             return Ok("Email successfully updated");
         }

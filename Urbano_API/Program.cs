@@ -103,8 +103,8 @@ builder.Services.AddAuthentication(options =>
         },
         OnTokenValidated = context =>
         {
-            var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
-            var roleClaim = claimsIdentity.FindFirst(ClaimTypes.Role)?.Value;
+            var claimsIdentity = context!.Principal!.Identity as ClaimsIdentity;
+            var roleClaim = claimsIdentity!.FindFirst(ClaimTypes.Role)?.Value;
             var emailClaim = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
 
             return Task.CompletedTask;
