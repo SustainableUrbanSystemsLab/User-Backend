@@ -22,17 +22,24 @@ if (builder.Environment.IsDevelopment())
 // Get EV vars
 var smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
 var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+var mongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTIONSTRING");
 var jwtKey = builder.Configuration.GetValue<string>("SecretKey") ?? "YourSuperSecretKey";
 
 // Replace with EV vars
 builder.Configuration["Mailing:SmtpUsername"] = smtpUsername;
 builder.Configuration["Mailing:SmtpPassword"] = smtpPassword;
+builder.Configuration["UrbanoDatabase:ConnectionString"] = mongoConnectionString;
 builder.Configuration["Jwt:Key"] = jwtKey; // Add JWT key to configuration
 
 // EV Loading Warning
 if (string.IsNullOrEmpty(smtpUsername) || string.IsNullOrEmpty(smtpPassword))
 {
     Console.WriteLine("Warning: SMTP username or password is missing. Emails may not be sent.");
+}
+
+if (string.IsNullOrEmpty(mongoConnectionString))
+{
+    Console.WriteLine("Warning: MongoDB Connection String is missing.");
 }
 
 if (string.IsNullOrEmpty(jwtKey))
