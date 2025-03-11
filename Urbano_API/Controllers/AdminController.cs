@@ -21,11 +21,11 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateRateLimit([FromBody] string userName, string token, int maxAttempts)
+        public async Task<IActionResult> UpdateRateLimit([FromBody] string userId, string token, int maxAttempts)
         {
             try
             {
-                var user = await _userRepository.GetUserAsync(userName);
+                var user = await _userRepository.GetAsync(userId);
 
                 if (user == null)
                 {
@@ -51,7 +51,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetUserAsync(request.UserName);
+                var user = await _userRepository.GetAsync(request.UserId);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");
@@ -78,7 +78,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetUserAsync(request.UserName);
+                var user = await _userRepository.GetUserAsync(request.UserId);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");
@@ -98,7 +98,7 @@ namespace Urbano_API.Controllers
                 // Optionally log the exception here
                 return StatusCode(500, "An error occurred while deactivating the user: " + ex.Message);
             }
-        }
+        }  
         [HttpGet("user/role-get/{username}")]
         public async Task<IActionResult> GetUserRole(string username)
         {

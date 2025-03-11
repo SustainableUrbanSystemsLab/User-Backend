@@ -70,7 +70,7 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var resp = await _userRepository.GetUserAsync(credential.UserName);
+            var resp = await _userRepository.GetAsync(credential.UserId);
 
             // This line might throw a NullReferenceException if resp is null.
             var pastLoginDate = resp.LastLoginDate;
@@ -92,7 +92,7 @@ public class AuthController : ControllerBase
             var expiresAt = DateTime.UtcNow.AddMonths(1);
 
             // Verify the credential
-            if (resp.Verified == true && resp.UserName == credential.UserName && CryptographicOperations.FixedTimeEquals(Convert.FromHexString(_authService.GeneratePasswordHash(credential.Password)), Convert.FromHexString(resp.Password)))
+            if (resp.Verified == true && resp.UserId == credential.UserId && CryptographicOperations.FixedTimeEquals(Convert.FromHexString(_authService.GeneratePasswordHash(credential.Password)), Convert.FromHexString(resp.Password)))
             {
                 //Update User Login Date
                 await _userRepository.UpdateLastLoginDateAsync(resp.Id!, DateTime.UtcNow);
