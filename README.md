@@ -12,6 +12,37 @@ Eddy3D is an autoCAD extension designed to provide advanced simulations and visu
 
 # Release Notes
 
+## Version 0.3.0
+
+### Features
+- **Exception Handling**:  
+  - Auth Controller
+  - Admin Controller
+  - Wallet Controller
+  - Redundant PUTs
+
+- **Controller Authorization (Complete)**:  
+  - Admin Controller
+  - Wallet Controller
+
+- **Wallet Standarization**:  
+  - Wallet Controller and functionality standardized
+
+- **DTO Standarization**:  
+  - All DTO's Standardized
+
+- **User Calls Standarization**:  
+  - Calls for User standardized to use UserId
+
+- **Secrets and Enviornment Variables (Update)**:  
+  - MongoDB Connection String
+
+### Bug Fixes
+- (Added Excpetion Handling)
+
+### Known Issues
+- Verifcation and Email services rely on UserName to some degree still.
+
 ## Version 0.2.0
 
 ### Features
@@ -37,6 +68,7 @@ Eddy3D is an autoCAD extension designed to provide advanced simulations and visu
     - OTP Emails
   - API Calls
     - Ready for front end, testing in Hoppscotch
+
 - **Administrative Functionalities**:  
   - User Management
     - Account Deactivation
