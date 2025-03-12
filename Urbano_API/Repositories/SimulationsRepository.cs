@@ -30,13 +30,14 @@ public class SimulationsRepository: ISimulationsRepository
             urbanoStoreDatabaseSettings.Value.SimulationsYearlyCollectionName);
     }
 
-    public async Task<Simulations?> IncrementSimulationsDailyValueAsync(DateTime date, int incrementBy, string type)
+    public async Task<Simulations?> IncrementSimulationsDailyValueAsync(DateTime date, int incrementBy, string type, string userId)
     {
         var dateOnly = date.ToString("yyyy-MM-dd");
-        var filter = Builders<Simulations>.Filter.And(Builders<Simulations>.Filter.Eq(r => r.Date, dateOnly), Builders<Simulations>.Filter.Eq(r => r.SimulationType, type.Substring(0, type.IndexOf("Token"))));
+        var filter = Builders<Simulations>.Filter.And(Builders<Simulations>.Filter.Eq(r => r.Date, dateOnly), Builders<Simulations>.Filter.Eq(r => r.SimulationType, type.Substring(0, type.IndexOf("Token"))), Builders<Simulations>.Filter.Eq(r => r.UserId!, userId));
         var update = Builders<Simulations>.Update
             .SetOnInsert(r => r.Date, dateOnly)
             .SetOnInsert(r => r.SimulationType, type.Substring(0, type.IndexOf("Token")))
+            .SetOnInsert(r => r.UserId!, userId)
             .Inc(r => r.SimulationsCount, incrementBy);
         var options = new FindOneAndUpdateOptions<Simulations>
         {
