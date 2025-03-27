@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Mvc;
 
@@ -58,8 +58,6 @@ public class AuthController : ControllerBase
         try
         {
             var resp = await _userRepository.GetAsync(credential.UserId);
-
-            // This line might throw a NullReferenceException if resp is null.
 
             // User does not exist
             if (resp is null)
