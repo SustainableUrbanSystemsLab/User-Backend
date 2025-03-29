@@ -22,6 +22,7 @@ if (builder.Environment.IsDevelopment())
 // Get EV vars
 var smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
 var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+// New Connection String Listed in EV vars
 var mongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTIONSTRING");
 var jwtKey = builder.Configuration.GetValue<string>("SecretKey") ?? "YourSuperSecretKey";
 
