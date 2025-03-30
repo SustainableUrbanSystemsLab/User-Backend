@@ -59,8 +59,6 @@ public class AuthController : ControllerBase
         {
             var resp = await _userRepository.GetAsync(credential.UserId);
 
-            // This line might throw a NullReferenceException if resp is null.
-
             // User does not exist
             if (resp is null)
             {
