@@ -38,6 +38,7 @@ public class User
     public DateTime LastLoginDate {get; set; } = DateTime.MinValue;
 
     public int totalSimulationsRun { get; set; } = 0;
+    //All users migrated from previous data
     public bool MigratedUser { get; set; } = false;
 
      public User()
