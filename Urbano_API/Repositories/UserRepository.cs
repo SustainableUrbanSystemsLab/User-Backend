@@ -54,5 +54,20 @@ public class UserRepository: IUserRepository
             throw;
         }
     }
+    public async Task SetMigratedFlagAsync(string userId, bool isMigrated)
+    {
+        var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+        var update = Builders<User>.Update.Set(u => u.MigratedUser, isMigrated);
+
+        try
+        {
+            await _usersCollection.UpdateOneAsync(filter, update);
+        }
+        catch (MongoCommandException ex)
+        {
+            Console.WriteLine($"MongoDB error while setting MigratedUser flag: {ex.Message}");
+            throw;
+        }
+    }
 }
 

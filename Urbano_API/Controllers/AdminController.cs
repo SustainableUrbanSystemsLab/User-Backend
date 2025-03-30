@@ -110,5 +110,24 @@ namespace Urbano_API.Controllers
 
             return Ok(new { Role = user.Role });
         }
+        [HttpPut("user/set-migratedFlag")]
+        public async Task<IActionResult> SetMigratedUserFlag([FromBody] SetMigratedFlagDTO request)
+        {
+            try
+            {
+                var user = await _userRepository.GetAsync(request.UserId);
+                if (user == null)
+                {
+                    return NotFound("User doesn't exist");
+                }
+
+                await _userRepository.SetMigratedFlagAsync(request.UserId, request.Migrated);
+                return Ok($"Successfully updated MigratedUser to {request.Migrated} for user {request.UserId}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while updating the migrated flag: " + ex.Message);
+            }
+        }
     }
 }
