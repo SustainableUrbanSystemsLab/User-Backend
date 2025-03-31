@@ -10,7 +10,7 @@ from datetime import datetime
 load_dotenv()
 
 mongo_uri = os.getenv("MONGO_CONNECTIONSTRING")
-db_name = "BackendTesting"  # Update if needed
+db_name = "UrbanoStore"  # Update if needed
 
 # Attempt to connect to MongoDB
 try:
@@ -52,8 +52,12 @@ def migrate_users(csv_path):
                         "FirstName": row_uc.get("FIRSTNAME", "N/A"),
                         "LastName": row_uc.get("LASTNAME", "N/A"),
                         "NameOfInstitution": row_uc.get("NAME_OF_INSTITUTION", "N/A"),
-                        "AddedTime": row_uc.get("ADDED_TIME", "N/A"),
-                        "ModifiedTime": row_uc.get("MODIFIED_TIME", "N/A")
+                        "CurrentProfession": row_uc.get("CURRENT_PROFESSION", "N/A"),
+                        "CurrentProfessionIfOther": row_uc.get("CURRENT_PROFESSION_IF_OTHER", "N/A"),
+                        "IntendToUseEddy3dAs": row_uc.get("I_INTEND_TO_USE_EDDY3D_AS", "N/A"),
+                        "AddedTime": row_uc.get("ADDED_TIME", "N/A"),       # Optionally parse to datetime
+                        "ModifiedTime": row_uc.get("MODIFIED_TIME", "N/A")                    
+                    
                     }
                     
                     # Define the old (useless) fields to remove.
