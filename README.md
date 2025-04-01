@@ -11,6 +11,26 @@ Eddy3D is an autoCAD extension designed to provide advanced simulations and visu
 ---
 
 # Release Notes
+## Version 0.4.0
+
+### Features
+- **Production Build**:  
+  - Implemented Correct Build Settings
+
+- **User Base Transfer**:  
+  - Built and executed routine to bring all previous Eddy3D users into new database
+  - Included special flag for these past users
+
+- **Initial Live Production Developments**:  
+  - Integrated into Eddy3D frontend
+  - Implemented new live production database
+  - Implemented live production API host
+
+### Bug Fixes
+- Fixed Verifcation and Email services to rely on userID.
+
+### Known Issues
+- Issues with verificatoin system not correctly updatign the database for verified users
 
 ## Version 0.3.0
 
