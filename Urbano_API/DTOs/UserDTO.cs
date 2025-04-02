@@ -11,6 +11,7 @@ public class UserDTO
     public string FirstName { get; set; } = null!;
 
     public string LastName { get; set; } = null!;
+    public CommunityType Community { get; set; }
 
     public User GetUser()
     {
@@ -20,6 +21,7 @@ public class UserDTO
         user.Password = this.Password;
         user.FirstName = this.FirstName;
         user.LastName = this.LastName;
+        user.Communities = new List<CommunityType> { this.Community };
 
         return user;
     }

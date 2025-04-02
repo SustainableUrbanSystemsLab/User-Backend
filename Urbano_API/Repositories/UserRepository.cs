@@ -69,5 +69,42 @@ public class UserRepository: IUserRepository
             throw;
         }
     }
+    public async Task AddCommunityIfNotExistsAsync(string userId, CommunityType community)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, userId),
+            Builders<User>.Filter.Not(
+                Builders<User>.Filter.AnyEq(u => u.Communities, community)
+            )
+        );
+
+        var update = Builders<User>.Update.Push(u => u.Communities, community);
+
+        try
+        {
+            await _usersCollection.UpdateOneAsync(filter, update);
+        }
+        catch (MongoCommandException ex)
+        {
+            Console.WriteLine($"MongoDB error while adding community: {ex.Message}");
+            throw;
+        }
+    }
+    public async Task RemoveCommunityAsync(string userId, CommunityType community)
+    {
+        var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+        var update = Builders<User>.Update.Pull(u => u.Communities, community);
+
+        try
+        {
+            await _usersCollection.UpdateOneAsync(filter, update);
+        }
+        catch (MongoCommandException ex)
+        {
+            Console.WriteLine($"MongoDB error while removing community: {ex.Message}");
+            throw;
+        }
+    }
+
 }
 

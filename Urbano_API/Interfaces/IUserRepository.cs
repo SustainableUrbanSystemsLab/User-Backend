@@ -18,5 +18,7 @@ public interface IUserRepository
     
     public Task UpdateLastLoginDateAsync(string id, DateTime lastLoginDate);
     public Task SetMigratedFlagAsync(string id, bool isMigrated);
+    public Task AddCommunityIfNotExistsAsync(string userId, CommunityType community);
+    public Task RemoveCommunityAsync(string userId, CommunityType community);
 }
 

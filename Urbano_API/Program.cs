@@ -6,7 +6,8 @@ using Urbano_API.Services;
 using Urbano_API.Repositories;
 using Urbano_API.Interfaces;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Logging; // Add this at the top
+using Microsoft.IdentityModel.Logging;
+using System.Text.Json.Serialization; // Add this at the top
 
 IdentityModelEventSource.ShowPII = true; // Enable detailed JWT errors
 
@@ -135,7 +136,10 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
