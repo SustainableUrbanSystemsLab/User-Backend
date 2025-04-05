@@ -13,6 +13,7 @@ public class Registrations
     public string Date { get; set; } = string.Empty;
 
     public int RegistrationsCount { get; set; } = 0;
+    public CommunityType Community { get; set; }
 
     public Registrations()
     {

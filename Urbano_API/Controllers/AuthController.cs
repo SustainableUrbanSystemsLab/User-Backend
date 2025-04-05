@@ -8,6 +8,7 @@ using Urbano_API.Interfaces;
 using System.Security.Cryptography;
 using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using System.Text.Json;
 
 namespace Urbano_API.Controllers;
 
@@ -81,6 +82,8 @@ public class AuthController : ControllerBase
             {
                 //Update User Login Date
                 await _userRepository.UpdateLastLoginDateAsync(resp.Id!, DateTime.UtcNow);
+                //Update Community
+                await _userRepository.AddCommunityIfNotExistsAsync(resp.Id!, credential.Community);              
                 // Creating the security context
                 var claims = new List<Claim> {
                         new Claim(ClaimTypes.Email, credential.UserName),
@@ -188,6 +191,7 @@ public class AuthController : ControllerBase
 
                 // Update all temporal registrations counters
                 var updatedRegistrationDaily = await _registrationsRepository.IncrementRegistrationsDailyValueAsync(DateTime.UtcNow, 1);
+                await _userRepository.AddCommunityIfNotExistsAsync(user.Id!, userDTO.Community);
                 if (updatedRegistrationDaily == null)
                 {
                     // TODO: Handle missing registration initialization.

@@ -35,6 +35,7 @@ namespace Urbano_API.Models
 
         [BsonElement("YearlyLoginCount")]
         public int YearlyLoginCount { get; set; } = 0;
+        public CommunityType Community { get; set; }
 
         public Logins()
         {

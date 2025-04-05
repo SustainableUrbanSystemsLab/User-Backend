@@ -129,5 +129,29 @@ namespace Urbano_API.Controllers
                 return StatusCode(500, "An error occurred while updating the migrated flag: " + ex.Message);
             }
         }
+        [HttpPut("user/remove-community")]
+        public async Task<IActionResult> RemoveCommunityFromUser([FromBody] RemoveCommunityDTO request)
+        {
+            try
+            {
+                var user = await _userRepository.GetAsync(request.UserId);
+                if (user == null)
+                {
+                    return NotFound("User doesn't exist");
+                }
+
+                if (!user.Communities.Contains(request.Community))
+                {
+                    return StatusCode(304, $"User is not part of {request.Community} community.");
+                }
+
+                await _userRepository.RemoveCommunityAsync(request.UserId, request.Community);
+                return Ok($"Successfully removed community {request.Community} from user {request.UserId}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while removing the community: " + ex.Message);
+            }
+        }
     }
 }

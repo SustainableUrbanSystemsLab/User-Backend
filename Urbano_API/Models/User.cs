@@ -40,6 +40,8 @@ public class User
     public int totalSimulationsRun { get; set; } = 0;
     //All users migrated from previous data
     public bool MigratedUser { get; set; } = false;
+    [BsonRepresentation(BsonType.String)]
+    public List<CommunityType> Communities { get; set; } = new List<CommunityType>();
 
      public User()
     {
@@ -52,4 +54,9 @@ enum Roles
     ADMIN,
     USER,
     VIP
+}
+public enum CommunityType
+{
+    Eddy3D,
+    Urbano
 }
