@@ -11,7 +11,6 @@ using System.Text.Json.Serialization; // Add this at the top
 
 IdentityModelEventSource.ShowPII = true; // Enable detailed JWT errors
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Load .env
@@ -23,19 +22,41 @@ if (builder.Environment.IsDevelopment())
 // Get EV vars
 var smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
 var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+var smtpServer = Environment.GetEnvironmentVariable("SMTP_SERVER");
+var smtpPort = Environment.GetEnvironmentVariable("SMTP_PORT");
+var mailingEmailFrom = Environment.GetEnvironmentVariable("MAILING_EMAILFROM");
+var mailingEmailName = Environment.GetEnvironmentVariable("MAILING_EMAILNAME");
 var mongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTIONSTRING");
-var jwtKey = builder.Configuration.GetValue<string>("SecretKey") ?? "YourSuperSecretKey";
+var jwtKey = Environment.GetEnvironmentVariable("SECRETKEY");
+var salt = Environment.GetEnvironmentVariable("PASSWORDSALT");
+
+Console.WriteLine($"Key: '{jwtKey}'");
+Console.WriteLine($"Length: {jwtKey.Length} chars");
+Console.WriteLine($"Byte Size: {Encoding.UTF8.GetBytes(jwtKey).Length} bytes");
+Console.WriteLine($"Bit Size: {Encoding.UTF8.GetBytes(jwtKey).Length * 8} bits");
 
 // Replace with EV vars
 builder.Configuration["Mailing:SmtpUsername"] = smtpUsername;
 builder.Configuration["Mailing:SmtpPassword"] = smtpPassword;
+builder.Configuration["Mailing:SmtpServer"] = smtpServer;
+builder.Configuration["Mailing:SmtpPort"] = smtpPort;
+builder.Configuration["Mailing:FromEmail"] = mailingEmailFrom;
+builder.Configuration["Mailing:FromName"] = mailingEmailName;
 builder.Configuration["UrbanoDatabase:ConnectionString"] = mongoConnectionString;
-builder.Configuration["Jwt:Key"] = jwtKey; // Add JWT key to configuration
+builder.Configuration["SecretKey"] = jwtKey;
+builder.Configuration["passwordSalt"] = salt;
+
+builder.Configuration["Jwt:Key"] = jwtKey; // Add JWT key to configuration // Not sure why, Keeping For Now, Secreting Key hurt me T_T 
 
 // EV Loading Warning
-if (string.IsNullOrEmpty(smtpUsername) || string.IsNullOrEmpty(smtpPassword))
+if (string.IsNullOrEmpty(smtpUsername) || string.IsNullOrEmpty(smtpPassword) || string.IsNullOrEmpty(smtpServer) || string.IsNullOrEmpty(smtpPort))
 {
-    Console.WriteLine("Warning: SMTP username or password is missing. Emails may not be sent.");
+    Console.WriteLine("Warning: SMTP username, password, server, and/or port is missing. Emails may not be sent.");
+}
+
+if (string.IsNullOrEmpty(mailingEmailFrom) || string.IsNullOrEmpty(mailingEmailName))
+{
+    Console.WriteLine("Warning: email and/or email name is missing. Emails may not be sent and/or propper.");
 }
 
 if (string.IsNullOrEmpty(mongoConnectionString))
@@ -140,6 +161,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -165,4 +187,3 @@ app.MapControllers();
 app.UseCors("whitelistedURLs");
 
 app.Run();
-
