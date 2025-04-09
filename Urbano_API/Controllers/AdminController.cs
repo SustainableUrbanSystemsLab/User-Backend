@@ -115,7 +115,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetUserAsync(request.UserId);
+                var user = await _userRepository.GetAsync(request.UserId);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");
@@ -134,7 +134,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetUserAsync(request.UserId);
+                var user = await _userRepository.GetAsync(request.UserId);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");
