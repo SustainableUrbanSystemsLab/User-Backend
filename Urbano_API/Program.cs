@@ -154,7 +154,7 @@ builder.Services.AddAuthentication(options =>
 // Configure Authorization
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("ADMIN"));
 });
 
 builder.Services.AddControllers().AddJsonOptions(options =>
