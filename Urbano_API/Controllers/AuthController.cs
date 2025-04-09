@@ -270,7 +270,6 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Optionally log the exception here
             return StatusCode(500, "An error occurred while processing the registration request: " + ex.Message);
         }
     }
