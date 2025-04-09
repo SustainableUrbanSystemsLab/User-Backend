@@ -113,7 +113,8 @@ public class VerificationService : IVerificationService
     public bool Verify(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var secretKey = Encoding.ASCII.GetBytes(configuration.GetValue<string>("SecretKey") ?? "");
+        // Change from ASCII to UTF8 to match token creation
+        var secretKey = Encoding.UTF8.GetBytes(configuration["SecretKey"] ?? "");
 
         try
         {
@@ -139,34 +140,34 @@ public class VerificationService : IVerificationService
 
     public string CreateToken(IEnumerable<Claim> claims, DateTime expireAt)
     {
-        var secretKey = Encoding.ASCII.GetBytes(configuration.GetValue<string>("SecretKey") ?? "");
-
-        // generate the JWT
+        // Get key from config and trim any whitespace
+        var secretKey = Encoding.UTF8.GetBytes(configuration["SecretKey"]?.Trim() ?? throw new Exception("SecretKey is missing"));
+        
         var jwt = new JwtSecurityToken(
-                claims: claims,
-                notBefore: DateTime.UtcNow,
-                expires: expireAt,
-                signingCredentials: new SigningCredentials(
-                    new SymmetricSecurityKey(secretKey),
-                    SecurityAlgorithms.HmacSha256Signature)
-            );
+            claims: claims,
+            notBefore: DateTime.UtcNow,
+            expires: expireAt,
+            signingCredentials: new SigningCredentials(
+                new SymmetricSecurityKey(secretKey),
+                SecurityAlgorithms.HmacSha256) // Note: Using HmacSha256 (not HmacSha256Signature)
+        );
 
         return new JwtSecurityTokenHandler().WriteToken(jwt);
     }
 
     public static string CreateToken(IConfiguration configuration, IEnumerable<Claim> claims, DateTime expireAt)
     {
-        var secretKey = Encoding.ASCII.GetBytes(configuration.GetValue<string>("SecretKey") ?? "");
-
-        // generate the JWT
+        // Get key from config and trim any whitespace
+        var secretKey = Encoding.UTF8.GetBytes(configuration["SecretKey"]?.Trim() ?? throw new Exception("SecretKey is missing"));
+        
         var jwt = new JwtSecurityToken(
-                claims: claims,
-                notBefore: DateTime.UtcNow,
-                expires: expireAt,
-                signingCredentials: new SigningCredentials(
-                    new SymmetricSecurityKey(secretKey),
-                    SecurityAlgorithms.HmacSha256Signature)
-            );
+            claims: claims,
+            notBefore: DateTime.UtcNow,
+            expires: expireAt,
+            signingCredentials: new SigningCredentials(
+                new SymmetricSecurityKey(secretKey),
+                SecurityAlgorithms.HmacSha256) // Note: Using HmacSha256 (not HmacSha256Signature)
+        );
 
         return new JwtSecurityTokenHandler().WriteToken(jwt);
     }

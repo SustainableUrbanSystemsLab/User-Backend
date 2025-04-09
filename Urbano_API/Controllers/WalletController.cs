@@ -28,7 +28,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserId);
+                var user = await _userRepository.GetAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -61,7 +61,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserId);
+                var user = await _userRepository.GetAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -87,7 +87,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserId);
+                var user = await _userRepository.GetAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -113,7 +113,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserId);
+                var user = await _userRepository.GetAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User not found");
