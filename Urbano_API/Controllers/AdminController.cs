@@ -10,7 +10,7 @@ namespace Urbano_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "Admin")] // Only users with the "Admin" role can access this controller
+    [Authorize(Roles = "ADMIN")] // Only users with the "Admin" role can access this controller
     public class AdminController : ControllerBase
     {
         private readonly IUserRepository _userRepository;

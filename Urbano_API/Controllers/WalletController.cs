@@ -11,7 +11,7 @@ namespace Urbano_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "Admin")] // Only admins can access wallet-related endpoints
+    [Authorize(Roles = "ADMIN")] // Only admins can access wallet-related endpoints
     public class WalletController : ControllerBase
     {
         private readonly IWalletRepository _walletRepository;
