@@ -13,31 +13,54 @@ IdentityModelEventSource.ShowPII = true; // Enable detailed JWT errors
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuration setup
+// =============================================
+// Enhanced Configuration Setup
+// =============================================
 if (builder.Environment.IsDevelopment())
 {
+    // Development: Use .env + User Secrets
     DotNetEnv.Env.Load();
-    builder.Configuration.AddUserSecrets<Program>(); // Add local secrets
+    builder.Configuration.AddUserSecrets<Program>();
+    Console.WriteLine("Running in DEVELOPMENT mode (using .env + user secrets)");
 }
 else
 {
-    // In production (Docker/Render), rely solely on environment variables
+    // Production: Use Render environment variables
     builder.Configuration.AddEnvironmentVariables();
+    Console.WriteLine("Running in PRODUCTION mode (using Render env vars)");
 }
 
-// Get configuration values - works in both dev and production
-var smtpUsername = builder.Configuration["Mailing:SmtpUsername"] ?? Environment.GetEnvironmentVariable("SMTP_USERNAME");
-var smtpPassword = builder.Configuration["Mailing:SmtpPassword"] ?? Environment.GetEnvironmentVariable("SMTP_PASSWORD");
-var smtpServer = builder.Configuration["Mailing:SmtpServer"] ?? Environment.GetEnvironmentVariable("SMTP_SERVER");
-var smtpPort = builder.Configuration["Mailing:SmtpPort"] ?? Environment.GetEnvironmentVariable("SMTP_PORT");
-var mailingEmailFrom = builder.Configuration["Mailing:FromEmail"] ?? Environment.GetEnvironmentVariable("MAILING_EMAILFROM");
-var mailingEmailName = builder.Configuration["Mailing:FromName"] ?? Environment.GetEnvironmentVariable("MAILING_EMAILNAME");
-var mongoConnectionString = builder.Configuration["UrbanoDatabase:ConnectionString"] ?? Environment.GetEnvironmentVariable("MONGO_CONNECTIONSTRING");
-var jwtKey = builder.Configuration["SecretKey"] ?? Environment.GetEnvironmentVariable("SECRETKEY");
-var salt = builder.Configuration["passwordSalt"] ?? Environment.GetEnvironmentVariable("PASSWORDSALT");
+// =============================================
+// Environment-Safe Configuration Access
+// =============================================
+var GetConfigValue = new Func<string, string?>((key) => 
+{
+    // Try config first, then fallback to environment variables
+    var value = builder.Configuration[key] ?? Environment.GetEnvironmentVariable(key);
+    
+    if (string.IsNullOrEmpty(value) && !key.Contains("Password") && !key.Contains("Secret"))
+    {
+        Console.WriteLine($"Configuration Warning: {key} is null or empty");
+    }
+    
+    return value;
+});
 
-// Debug output (keep your existing logging)
-Console.WriteLine($"Key: '{jwtKey}'");
+// Get all configuration values
+var smtpUsername = GetConfigValue("Mailing:SmtpUsername") ?? GetConfigValue("SMTP_USERNAME");
+var smtpPassword = GetConfigValue("Mailing:SmtpPassword") ?? GetConfigValue("SMTP_PASSWORD");
+var smtpServer = GetConfigValue("Mailing:SmtpServer") ?? GetConfigValue("SMTP_SERVER");
+var smtpPort = GetConfigValue("Mailing:SmtpPort") ?? GetConfigValue("SMTP_PORT");
+var mailingEmailFrom = GetConfigValue("Mailing:FromEmail") ?? GetConfigValue("MAILING_EMAILFROM");
+var mailingEmailName = GetConfigValue("Mailing:FromName") ?? GetConfigValue("MAILING_EMAILNAME");
+var mongoConnectionString = GetConfigValue("UrbanoDatabase:ConnectionString") ?? GetConfigValue("MONGO_CONNECTIONSTRING");
+var jwtKey = GetConfigValue("SecretKey") ?? GetConfigValue("SECRETKEY");
+var salt = GetConfigValue("passwordSalt") ?? GetConfigValue("PASSWORDSALT");
+
+// =============================================
+// Debug Output
+// =============================================
+Console.WriteLine($"Key: '{jwtKey?.Substring(0, Math.Min(5, jwtKey?.Length ?? 0))}...'");
 Console.WriteLine($"Length: {jwtKey?.Length ?? 0} chars");
 if (jwtKey != null)
 {
@@ -45,25 +68,16 @@ if (jwtKey != null)
     Console.WriteLine($"Bit Size: {Encoding.UTF8.GetBytes(jwtKey).Length * 8} bits");
 }
 
-// Configuration warnings
-if (string.IsNullOrEmpty(smtpUsername) || string.IsNullOrEmpty(smtpPassword) || string.IsNullOrEmpty(smtpServer) || string.IsNullOrEmpty(smtpPort))
-{
-    Console.WriteLine("Warning: SMTP username, password, server, and/or port is missing. Emails may not be sent.");
-}
-
-if (string.IsNullOrEmpty(mailingEmailFrom) || string.IsNullOrEmpty(mailingEmailName))
-{
-    Console.WriteLine("Warning: email and/or email name is missing. Emails may not be sent and/or propper.");
-}
-
+// =============================================
+// Configuration Validation
+// =============================================
 if (string.IsNullOrEmpty(mongoConnectionString))
 {
-    Console.WriteLine("Warning: MongoDB Connection String is missing.");
-}
-
-if (string.IsNullOrEmpty(jwtKey))
-{
-    Console.WriteLine("Warning: JWT key is missing. Authentication will not work.");
+    Console.WriteLine("CRITICAL ERROR: MongoDB Connection String is missing!");
+    if (builder.Environment.IsProduction())
+    {
+        throw new Exception("MongoDB connection string is required in production");
+    }
 }
 
 // CORS setup
@@ -153,6 +167,10 @@ if (!string.IsNullOrEmpty(jwtKey))
             }
         };
     });
+}
+else if (builder.Environment.IsProduction())
+{
+    throw new Exception("JWT secret key is required in production");
 }
 
 // Authorization
