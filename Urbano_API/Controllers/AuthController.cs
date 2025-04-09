@@ -58,7 +58,7 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var resp = await _userRepository.GetAsync(credential.UserId);
+            var resp = await _userRepository.GetUserAsync(credential.UserName);
 
             // User does not exist
             if (resp is null)

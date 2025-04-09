@@ -3,8 +3,7 @@ using Urbano_API.Models;
 
 public class LoginDTO
 {
-    public string UserId{ get; set; } = string.Empty;
     public string UserName{ get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
-    public CommunityType Community { get; set; }
+    public CommunityType Community { get; set; } 
 }

@@ -21,11 +21,11 @@ namespace Urbano_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateRateLimit([FromBody] string userId, string token, int maxAttempts)
+        public async Task<IActionResult> UpdateRateLimit([FromBody] string userName, string token, int maxAttempts)
         {
             try
             {
-                var user = await _userRepository.GetAsync(userId);
+                var user = await _userRepository.GetAsync(userName);
 
                 if (user == null)
                 {
@@ -51,7 +51,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserId);
+                var user = await _userRepository.GetAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");
@@ -78,7 +78,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetUserAsync(request.UserId);
+                var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");

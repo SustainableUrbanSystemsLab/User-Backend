@@ -36,10 +36,14 @@ public class AuthService: IAuthService
         return valid;
     }
 
-    public String GeneratePasswordHash(String password)
+    public string GeneratePasswordHash(string password)
     {
-        var salt = Encoding.ASCII.GetBytes(configuration.GetValue<string>("passwordSalt") ?? "");
-
+        var saltString = configuration["passwordSalt"] ?? 
+                        throw new Exception("Password salt is not configured");
+        
+        // Use UTF8 encoding consistently (matches JWT token handling)
+        var salt = Encoding.UTF8.GetBytes(saltString);
+    
         var hash = Rfc2898DeriveBytes.Pbkdf2(
             Encoding.UTF8.GetBytes(password),
             salt,
