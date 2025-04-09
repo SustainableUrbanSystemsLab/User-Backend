@@ -10,7 +10,7 @@ namespace Urbano_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "ADMIN")] // Only users with the "Admin" role can access this controller
+    [Authorize(Policy = "AdminOnly")]
     public class AdminController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
@@ -25,7 +25,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(userName);
+                var user = await _userRepository.GetUserAsync(userName);
 
                 if (user == null)
                 {
@@ -51,7 +51,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserName);
+                var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");
@@ -115,7 +115,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserId);
+                var user = await _userRepository.GetUserAsync(request.UserId);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");
@@ -134,7 +134,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserId);
+                var user = await _userRepository.GetUserAsync(request.UserId);
                 if (user == null)
                 {
                     return NotFound("User doesn't exist");

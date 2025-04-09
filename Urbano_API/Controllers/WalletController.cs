@@ -11,7 +11,7 @@ namespace Urbano_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "ADMIN")] // Only admins can access wallet-related endpoints
+    [Authorize(Policy = "AdminOnly")]
     public class WalletController : ControllerBase
     {
         private readonly IWalletRepository _walletRepository;
@@ -28,7 +28,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserName);
+                var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -61,7 +61,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserName);
+                var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -87,7 +87,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserName);
+                var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -113,7 +113,7 @@ namespace Urbano_API.Controllers
         {
             try
             {
-                var user = await _userRepository.GetAsync(request.UserName);
+                var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
                     return NotFound("User not found");
