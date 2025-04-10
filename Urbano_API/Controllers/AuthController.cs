@@ -443,42 +443,40 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("/verify/{token}")]
-    public async Task<IActionResult> Verify(string token)
-    {
-        try
+        public async Task<IActionResult> Verify(string token)
         {
-            var resp = _verificationService.Verify(token);
-            if (!resp)
+            try
             {
-                ModelState.AddModelError("Unauthorized", "You are not authorized to access the endpoint.");
+                if (!_verificationService.Verify(token))
+                {
+                    ModelState.AddModelError("Unauthorized", "Invalid verification token.");
+                    return Unauthorized(ModelState);
+                }
+
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var userName = jwtToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value;
+
+                var user = await _userRepository.GetUserAsync(userName);
+                if (user != null)
+                {
+                    user.Verified = true;
+                    if (user.Id != null)
+                    {
+                        await _userRepository.UpdateAsync(user.Id, user);
+                        return Content(_verificationService.GetVerificationSuccessPage(), "text/html");
+                    }
+                }
+
+                ModelState.AddModelError("Unauthorized", "Verification failed.");
                 return Unauthorized(ModelState);
             }
-
-            var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(token);
-            var userName = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value;
-
-            var user = await _userRepository.GetUserAsync(userName);
-            if (user != null)
+            catch (Exception ex)
             {
-                user.Verified = true;
-                if (user.Id != null)
-                {
-                    await _userRepository.UpdateAsync(user.Id, user);
-                    string url = $"{configuration.GetValue<string>("ApiURL")}/Login";   // IS POINTING TO BACKEND FOR LOCAL DEV RN!!!!!!!!!!!!!!!!
-                    return Redirect(url);
-                }
+                _logger.LogError(ex, "Error during verification");
+                return StatusCode(500, "An error occurred during verification");
             }
-
-            ModelState.AddModelError("Unauthorized", "You are not authorized to access the endpoint.");
-            return Unauthorized(ModelState);
         }
-        catch (Exception ex)
-        {
-            // Optionally log the exception here
-            return StatusCode(500, "An error occurred during verification: " + ex.Message);
-        }
-    }
 
     [HttpPut("/password")]
     public async Task<IActionResult> UpdatePassword([FromBody] PasswordDTO verPass)
