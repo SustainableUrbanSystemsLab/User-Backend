@@ -6,6 +6,8 @@ public interface IVerificationService
 {
     public void SendVerificationMail(string email, string name);
 
+    public string GetVerificationSuccessPage();
+
     public void SendOTP(string email, string name, string purpose);
 
     public bool Verify(string token);

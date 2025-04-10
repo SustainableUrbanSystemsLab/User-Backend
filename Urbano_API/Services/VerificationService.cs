@@ -19,6 +19,7 @@ public class VerificationService : IVerificationService
 {
     private static string emailVerificationBody = File.ReadAllText("Assets/EmailVerificationBody.html");
     private static string otpVerificationBody = File.ReadAllText("Assets/PasswordChangeOTPBody.html");
+    private static string verificationSuccessHtml = File.ReadAllText("Assets/EmailVerificationPage.html");
 
     private readonly IConfiguration configuration;
     private readonly IVerificationRepository _verificationRepository;
@@ -51,6 +52,12 @@ public class VerificationService : IVerificationService
         var htmlContent = emailVerificationBody.Replace("{VerificationUrl}", url);
 
         SendEmail(email, name, "Verify your email address", htmlContent);
+    }
+
+    public string GetVerificationSuccessPage()
+    {
+        var uiUrl = configuration.GetValue<string>("UiURL");
+        return verificationSuccessHtml.Replace("{UiURL}", uiUrl);
     }
 
     public void SendOTP(string email, string name, string purpose)
@@ -87,7 +94,7 @@ public class VerificationService : IVerificationService
             {
                 client.UseDefaultCredentials = false;
                 client.Credentials = new NetworkCredential(_smtpUsername, _smtpPassword);
-                client.EnableSsl = true; // Enable SSL/TLS
+                client.EnableSsl = true;
 
                 var from = new MailAddress(_fromEmail, _fromName);
                 var to = new MailAddress(toEmail, toName);
@@ -113,7 +120,6 @@ public class VerificationService : IVerificationService
     public bool Verify(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        // Change from ASCII to UTF8 to match token creation
         var secretKey = Encoding.UTF8.GetBytes(configuration["SecretKey"] ?? "");
 
         try
@@ -140,7 +146,6 @@ public class VerificationService : IVerificationService
 
     public string CreateToken(IEnumerable<Claim> claims, DateTime expireAt)
     {
-        // Get key from config and trim any whitespace
         var secretKey = Encoding.UTF8.GetBytes(configuration["SecretKey"]?.Trim() ?? throw new Exception("SecretKey is missing"));
         
         var jwt = new JwtSecurityToken(
@@ -149,7 +154,7 @@ public class VerificationService : IVerificationService
             expires: expireAt,
             signingCredentials: new SigningCredentials(
                 new SymmetricSecurityKey(secretKey),
-                SecurityAlgorithms.HmacSha256) // Note: Using HmacSha256 (not HmacSha256Signature)
+                SecurityAlgorithms.HmacSha256)
         );
 
         return new JwtSecurityTokenHandler().WriteToken(jwt);
@@ -157,7 +162,6 @@ public class VerificationService : IVerificationService
 
     public static string CreateToken(IConfiguration configuration, IEnumerable<Claim> claims, DateTime expireAt)
     {
-        // Get key from config and trim any whitespace
         var secretKey = Encoding.UTF8.GetBytes(configuration["SecretKey"]?.Trim() ?? throw new Exception("SecretKey is missing"));
         
         var jwt = new JwtSecurityToken(
@@ -166,7 +170,7 @@ public class VerificationService : IVerificationService
             expires: expireAt,
             signingCredentials: new SigningCredentials(
                 new SymmetricSecurityKey(secretKey),
-                SecurityAlgorithms.HmacSha256) // Note: Using HmacSha256 (not HmacSha256Signature)
+                SecurityAlgorithms.HmacSha256)
         );
 
         return new JwtSecurityTokenHandler().WriteToken(jwt);
