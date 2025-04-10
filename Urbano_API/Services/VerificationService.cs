@@ -56,7 +56,7 @@ public class VerificationService : IVerificationService
 
     public string GetVerificationSuccessPage()
     {
-        var uiUrl = configuration.GetValue<string>("UiURL") ?? "http://localhost:5173";
+        var uiUrl = configuration.GetValue<string>("UiURL");
         return verificationSuccessHtml.Replace("{UiURL}", uiUrl);
     }
 
