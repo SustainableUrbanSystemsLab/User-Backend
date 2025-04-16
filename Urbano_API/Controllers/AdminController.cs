@@ -25,10 +25,12 @@ namespace Urbano_API.Controllers
         {
             try
             {
+                // Get user by username
                 var user = await _userRepository.GetUserAsync(userName);
 
                 if (user == null)
                 {
+                    // return "Unauthorized" if user does not exist
                     ModelState.AddModelError("Unauthorized", "User doesn't exist");
                     return Unauthorized(ModelState);
                 }
@@ -51,9 +53,11 @@ namespace Urbano_API.Controllers
         {
             try
             {
+                // Get user by username
                 var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
+                    // return NotFound if user does not exist
                     return NotFound("User doesn't exist");
                 }
                 if (user.Role == request.NewRole)
@@ -78,9 +82,11 @@ namespace Urbano_API.Controllers
         {
             try
             {
+                // Get user by username
                 var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
+                    // return NotFound if user does not exist
                     return NotFound("User doesn't exist");
                 }
                 if (user.Deactivated == request.Deactivated)
@@ -102,9 +108,11 @@ namespace Urbano_API.Controllers
         [HttpGet("user/role-get/{username}")]
         public async Task<IActionResult> GetUserRole(string username)
         {
+            // Get user by username
             var user = await _userRepository.GetUserAsync(username);
             if (user == null)
             {
+                // return NotFound if user does not exist
                 return NotFound("User not found");
             }
 
@@ -115,9 +123,11 @@ namespace Urbano_API.Controllers
         {
             try
             {
+                // Get user by user id
                 var user = await _userRepository.GetAsync(request.UserId);
                 if (user == null)
                 {
+                    // return NotFound if user does not exist
                     return NotFound("User doesn't exist");
                 }
 
@@ -134,9 +144,11 @@ namespace Urbano_API.Controllers
         {
             try
             {
+                // Get user by user id
                 var user = await _userRepository.GetAsync(request.UserId);
                 if (user == null)
                 {
+                    // return NotFound if user does not exist
                     return NotFound("User doesn't exist");
                 }
 
