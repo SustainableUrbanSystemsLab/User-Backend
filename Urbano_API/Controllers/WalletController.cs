@@ -28,9 +28,11 @@ namespace Urbano_API.Controllers
         {
             try
             {
+                // Get user by username
                 var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
+                    //return NotFound if user does not exist
                     return NotFound("User not found");
                 }
 
@@ -38,11 +40,12 @@ namespace Urbano_API.Controllers
                 {
                     return BadRequest("UserId is not a valid ObjectId.");
                 }
-
+                // Get user's wallet
                 var wallet = await _walletRepository.GetWalletByUserIdAsync(user.Id!);
 
                 if (wallet == null)
                 {
+                    // return NotFound if wallet does not exist
                     return NotFound("Wallet not found for the provided UserId.");
                 }
 
@@ -61,15 +64,18 @@ namespace Urbano_API.Controllers
         {
             try
             {
+                // Get user by username
                 var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
+                    //return NotFound if user does not exist
                     return NotFound("User not found");
                 }
 
                 var success = await _walletRepository.RemoveTokenAsync(user.Id!, request.TokenType, request.Quantity);
                 if (!success)
                 {
+                    // return BadRequest if insufficient balance or token not found
                     return BadRequest("Insufficient balance or token not found.");
                 }
 
@@ -87,15 +93,18 @@ namespace Urbano_API.Controllers
         {
             try
             {
+                // Get user by username
                 var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
+                    //return NotFound if user does not exist
                     return NotFound("User not found");
                 }
 
                 var isValid = await _walletRepository.VerifyTokenAsync(user.Id!, request.TokenType, request.RequiredQuantity);
                 if (!isValid)
                 {
+                    // return BadRequest if not insufficient tokens
                     return BadRequest("Insufficient tokens.");
                 }
 
@@ -113,9 +122,11 @@ namespace Urbano_API.Controllers
         {
             try
             {
+                // Get user by username
                 var user = await _userRepository.GetUserAsync(request.UserName);
                 if (user == null)
                 {
+                    //return NotFound if user does not exist
                     return NotFound("User not found");
                 }
 
@@ -124,7 +135,7 @@ namespace Urbano_API.Controllers
             }
             catch (Exception ex)
             {
-                // Optionally log the exception here.
+                // Log Error for exception handling
                 return StatusCode(500, "An error occurred while retrieving the balance: " + ex.Message);
             }
         }
