@@ -1,0 +1,17 @@
+.env
+bin
+obj
+Urbano_API/Urbano_API.csproj.user
+*.vsidx
+**/.suo
+*.testlog
+**/testlog.manifest
+**/.DS_Store
+.vs/ProjectEvaluation/urbano_api.metadata.v7.bin
+.vs/ProjectEvaluation/urbano_api.projects.v7.bin
+.vs/Urbano_API/DesignTimeBuild/.dtbcache.v2
+.vs/Urbano_API/v17/.futdcache.v2
+/.vs/Urbano_API/v17
+/.vs/Urbano_API/CopilotIndices
+/.vs
+Misc/Render_Settings_Backend.png

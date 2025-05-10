@@ -1,0 +1,28 @@
+## .NET ##
+**/bin/
+**/obj/
+*.userprefs
+*.db
+*.dbmdl
+
+## Secrets ##
+**/.env
+
+## IDE ##
+.vscode/
+.idea/
+.vs/
+
+## Git ##
+.git/
+.gitignore
+
+## Docker ##
+Dockerfile*
+docker-compose*
+.dockerignore
+
+## Misc ##
+*.log
+*.swp
+.DS_Store
