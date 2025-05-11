@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 25.0.1706.4
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Urbano_API", "Urbano_API\Urbano_API.csproj", "{F8D65408-EF2C-4114-A148-B7549F1702FC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Urbano_API.Tests", "Urbano_API.Tests\Urbano_API.Tests.csproj", "{8B369A63-FEF8-49C6-8895-57C057766677}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		{F8D65408-EF2C-4114-A148-B7549F1702FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8D65408-EF2C-4114-A148-B7549F1702FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8D65408-EF2C-4114-A148-B7549F1702FC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8B369A63-FEF8-49C6-8895-57C057766677}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8B369A63-FEF8-49C6-8895-57C057766677}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8B369A63-FEF8-49C6-8895-57C057766677}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8B369A63-FEF8-49C6-8895-57C057766677}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
